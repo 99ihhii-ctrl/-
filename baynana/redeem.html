@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>بيننا — استخدام الكود</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&family=Noto+Sans+Arabic:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; background: #0d0d1a; color: #f0e6d3; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-x: hidden; }
+.stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite alternate; }
+@keyframes twinkle { from { opacity: 0.2; } to { opacity: 1; } }
+.top-bar { position: relative; z-index: 1; width: 100%; max-width: 460px; display: flex; justify-content: flex-start; margin-bottom: 10px; }
+.home-link { color: #5a4a3a; font-size: 13px; text-decoration: none; }
+.home-link:hover { color: #c9a96e; }
+.wrap { position: relative; z-index: 1; width: 100%; max-width: 460px; text-align: center; }
+.logo { font-size: 18px; letter-spacing: 6px; color: #c9a96e; margin-bottom: 30px; }
+.box { background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.3); border-radius: 24px; padding: 46px 36px; }
+.box h1 { font-size: 24px; margin-bottom: 24px; }
+.box input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #f0e6d3; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom: 16px; font-size: 16px; text-align: center; letter-spacing: 1px; }
+.box input::placeholder { color: #5a4a3a; }
+.btn { width: 100%; padding: 14px 28px; border-radius: 50px; font-size: 15px; font-weight: 700; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; border: none; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #c9a96e, #a07840); color: #0d0d1a; }
+.btn:hover { opacity: 0.85; transform: translateY(-2px); }
+.error-msg { display: none; margin-top: 16px; color: #f09090; font-size: 14px; background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.25); border-radius: 12px; padding: 12px 14px; }
+.note { margin-top: 20px; font-size: 12px; color: #5a4a3a; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="top-bar">
+  <a href="index.html" class="home-link">← الرئيسية</a>
+</div>
+<div class="wrap">
+  <div class="logo">بيننا</div>
+  <div class="box">
+    <h1>أدخلي كودك 🌙</h1>
+    <input type="text" id="codeInput" placeholder="مثال: GAME-XXXXX" autocomplete="off"/>
+    <button class="btn" onclick="redeemCode()">ابدأ</button>
+    <div class="error-msg" id="errorMsg">الكود غير صحيح، تأكدي منه وحاولي مرة ثانية 💛</div>
+  </div>
+  <p class="note">الكود يوصلك بعد إتمام الشراء من سلة</p>
+</div>
+<script>
+const container = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const star = document.createElement('div');
+  star.classList.add('star');
+  const size = Math.random() * 2.5 + 0.5;
+  star.style.cssText = 'width:' + size + 'px; height:' + size + 'px; top:' + (Math.random() * 100) + '%; left:' + (Math.random() * 100) + '%; animation-delay:' + (Math.random() * 3) + 's; animation-duration:' + (2 + Math.random() * 3) + 's;';
+  container.appendChild(star);
+}
+
+function goTo(page, code) {
+  localStorage.setItem('baynana_code', code);
+  location.href = page;
+}
+
+function redeemCode() {
+  const input = document.getElementById('codeInput');
+  const errorMsg = document.getElementById('errorMsg');
+  const code = input.value.trim().toUpperCase();
+  errorMsg.style.display = 'none';
+
+  if (code.indexOf('GAME-') === 0) {
+    goTo('game.html', code);
+  } else if (code.indexOf('QUIZ-') === 0) {
+    goTo('quiz.html', code);
+  } else if (code.indexOf('FULL-') === 0) {
+    goTo('bundle.html', code);
+  } else {
+    errorMsg.style.display = 'block';
+  }
+}
+
+document.getElementById('codeInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') redeemCode();
+});
+
+(function checkSavedCode() {
+  const saved = localStorage.getItem('baynana_code');
+  if (!saved) return;
+  if (saved.indexOf('GAME-') === 0) {
+    location.href = 'game.html';
+  } else if (saved.indexOf('QUIZ-') === 0) {
+    location.href = 'quiz.html';
+  } else if (saved.indexOf('FULL-') === 0) {
+    location.href = 'bundle.html';
+  } else {
+    document.getElementById('codeInput').value = saved;
+  }
+})();
+</script>
+</body>
+</html>
