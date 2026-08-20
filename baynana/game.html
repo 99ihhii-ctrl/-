@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>بيننا — العب معاً</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&family=Noto+Sans+Arabic:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; background: #0d0d1a; color: #f0e6d3; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-x: hidden; }
+.stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite alternate; }
+@keyframes twinkle { from { opacity: 0.2; } to { opacity: 1; } }
+.top-bar { position: relative; z-index: 1; width: 100%; max-width: 600px; display: flex; justify-content: flex-start; margin-bottom: 10px; }
+.home-link { color: #5a4a3a; font-size: 13px; text-decoration: none; }
+.home-link:hover { color: #c9a96e; }
+.game-container { position: relative; z-index: 1; width: 100%; max-width: 600px; text-align: center; }
+.logo { font-size: 14px; letter-spacing: 6px; color: #c9a96e; margin-bottom: 30px; }
+.picker h1 { font-size: 26px; margin-bottom: 8px; }
+.picker .sub { font-size: 14px; color: #8a7a6a; margin-bottom: 28px; }
+.cat-grid { display: flex; flex-direction: column; gap: 14px; }
+.cat-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,169,110,0.25); border-radius: 18px; padding: 20px 22px; cursor: pointer; transition: all 0.3s; text-align: right; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; color: #f0e6d3; width: 100%; }
+.cat-btn:hover { background: rgba(201,169,110,0.1); border-color: rgba(201,169,110,0.6); transform: translateY(-2px); }
+.cat-icon { font-size: 26px; margin-bottom: 8px; }
+.cat-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.cat-desc { font-size: 13px; color: #8a7a6a; line-height: 1.6; }
+.card-game { background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.3); border-radius: 24px; padding: 50px 40px; margin-bottom: 30px; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; }
+.question-number { font-size: 12px; color: #5a4a3a; letter-spacing: 4px; margin-bottom: 20px; }
+.question-text { font-size: clamp(20px, 4vw, 28px); font-weight: 400; color: #f0e6d3; line-height: 1.7; }
+.question-note { margin-top: 14px; font-size: 14px; color: #c9a96e; }
+.controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn { padding: 14px 28px; border-radius: 50px; font-size: 15px; font-weight: 700; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; border: none; cursor: pointer; transition: all 0.3s; }
+.btn-main { background: linear-gradient(135deg, #c9a96e, #a07840); color: #0d0d1a; }
+.btn-main:hover { opacity: 0.85; transform: translateY(-2px); }
+.btn-skip { background: rgba(255,255,255,0.05); color: #8a7a6a; border: 1px solid rgba(255,255,255,0.1); }
+.btn-skip:hover { background: rgba(255,255,255,0.1); }
+.btn-prev { background: transparent; color: #5a4a3a; border: 1px solid rgba(255,255,255,0.08); }
+.btn-prev:hover { color: #c9a96e; border-color: rgba(201,169,110,0.4); }
+.btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
+.progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(201,169,110,0.2); transition: all 0.3s; }
+.dot.active { background: #c9a96e; transform: scale(1.3); }
+.dot.done { background: rgba(201,169,110,0.5); }
+.end-screen { display: none; flex-direction: column; align-items: center; gap: 16px; }
+.end-screen h2 { font-size: 36px; color: #c9a96e; }
+.end-screen p { font-size: 18px; color: #8a7a6a; line-height: 1.7; }
+.level-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; letter-spacing: 2px; margin-bottom: 16px; }
+.level-deep { background: rgba(100,150,255,0.1); color: #90a8f0; border: 1px solid rgba(100,150,255,0.2); }
+.level-hot { background: rgba(255,100,100,0.1); color: #f09090; border: 1px solid rgba(255,100,100,0.2); }
+.level-understand { background: rgba(150,255,150,0.1); color: #90e090; border: 1px solid rgba(150,255,150,0.2); }
+.level-values { background: rgba(200,160,255,0.1); color: #c0a0f0; border: 1px solid rgba(200,160,255,0.2); }
+.change-cat { display: block; margin-top: 18px; color: #5a4a3a; font-size: 12px; text-decoration: none; cursor: pointer; }
+.change-cat:hover { color: #c9a96e; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="top-bar">
+  <a href="index.html" class="home-link">← الرئيسية</a>
+</div>
+<div class="game-container">
+  <div class="logo">بيننا</div>
+
+  <div class="picker" id="picker">
+    <h1>وش تبون الليلة؟ 🌙</h1>
+    <p class="sub">اختاروا القسم اللي يناسب مزاجكم</p>
+    <div class="cat-grid">
+      <button class="cat-btn" onclick="startCategory('deep')">
+        <div class="cat-icon">💙</div>
+        <div class="cat-name">عميقة</div>
+        <div class="cat-desc">مشاعر ولحظات وذكريات ما قلتوها لبعض قبل</div>
+      </button>
+      <button class="cat-btn" onclick="startCategory('hot')">
+        <div class="cat-icon">🔥</div>
+        <div class="cat-name">تحديات</div>
+        <div class="cat-desc">لحظات تعيشونها الحين — مو بس كلام</div>
+      </button>
+      <button class="cat-btn" onclick="startCategory('understand')">
+        <div class="cat-icon">💚</div>
+        <div class="cat-name">فهم بعض</div>
+        <div class="cat-desc">تعرفون احتياجات بعض وكيف تتعاملون صح</div>
+      </button>
+      <button class="cat-btn" onclick="startCategory('values')">
+        <div class="cat-icon">🌱</div>
+        <div class="cat-name">قيم ومستقبل</div>
+        <div class="cat-desc">قيمكم ومخاوفكم والحياة اللي تبونها سوا</div>
+      </button>
+      <button class="cat-btn" onclick="startCategory('all')">
+        <div class="cat-icon">✨</div>
+        <div class="cat-name">خلطة من الكل</div>
+        <div class="cat-desc">أسئلة وتحديات من كل الأقسام بترتيب عشوائي</div>
+      </button>
+    </div>
+  </div>
+
+  <div id="gameSection" style="display:none;">
+    <div class="progress" id="progress"></div>
+    <div class="card-game" id="card">
+      <div class="level-badge" id="qLevel"></div>
+      <div class="question-number" id="qNumber"></div>
+      <div class="question-text" id="qText"></div>
+      <div class="question-note" id="qNote"></div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-prev" id="prevBtn" onclick="prevQuestion()">السابق</button>
+      <button class="btn btn-main" onclick="nextQuestion()">التالي ✨</button>
+      <button class="btn btn-skip" onclick="skipQuestion()">تخطي</button>
+    </div>
+    <a class="change-cat" onclick="backToPicker()">↺ تغيير القسم</a>
+  </div>
+
+  <div class="end-screen" id="lockedScreen">
+    <h2>💛</h2>
+    <h2>عجبتكم التجربة؟</h2>
+    <p>هذي كانت 10 أسئلة بس من أصل أكثر من 100 سؤال وتحدي — الباقي يفتح قريباً مع الإطلاق الرسمي 🌙</p>
+    <input type="email" id="lockedEmailInput" placeholder="بريدكم الإلكتروني" style="width:100%; max-width:320px; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#f0e6d3; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom:12px; font-size:14px;"/>
+    <button class="btn btn-main" onclick="subscribeLocked()">سجلي عشان تكوني أول من يعرف 💌</button>
+    <a href="index.html" style="color:#5a4a3a; font-size:13px; margin-top:10px;">العودة للرئيسية</a>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <h2>💞</h2>
+    <h2>انتهى القسم</h2>
+    <p>شكراً لأنكم لعبتم معاً — كل جلسة تقربكم أكثر</p>
+    <button class="btn btn-main" onclick="backToPicker()">جربوا قسم ثاني 🔄</button>
+    <a href="index.html" style="color:#5a4a3a; font-size:13px; margin-top:10px;">العودة للرئيسية</a>
+  </div>
+</div>
+
+<script>
+const allQuestions = [
+  { text: "وش الحركة اللي لو سواها شريكك تخليك تذوب فوراً؟", level: "deep" },
+  { text: "أيش أكثر شيء تتمنى شريكك يفهمه عنك بدون ما تشرح؟", level: "deep" },
+  { text: "وصّف اللحظة اللي حسيت فيها إنك تحب شريكك أكثر شيء في حياتك", level: "deep" },
+  { text: "أيش الشيء اللي لما يقوله شريكك يخليك تحس إنك في أمان تام؟", level: "deep" },
+  { text: "وش أكثر لحظة صمت بينكم كانت أعمق من أي كلام؟", level: "deep" },
+  { text: "أيش الشيء اللي يخليك تشتاق لشريكك وهو جنبك؟", level: "deep" },
+  { text: "أيش اللحظة اللي تمنيت فيها تسجّلها وتحتفظ فيها للأبد؟", level: "deep" },
+  { text: "وش الشيء اللي لو فقدته من شريكك يتغير كل شيء؟", level: "deep" },
+  { text: "أيش أكثر شيء تخاف تقوله لشريكك وما قلته لحد الآن؟", level: "deep" },
+  { text: "لو تكتب جملة وحدة تلخص علاقتكم — أيش تكتب؟", level: "deep" },
+  { text: "وش الشيء اللي يجعلك تحس إن شريكك يحبك بدون ما يقول كلمة؟", level: "deep" },
+  { text: "وش أكثر لحظة حسيتم فيها إنكم ضد العالم سوا؟", level: "deep" },
+  { text: "أيش الشيء اللي تعلمته من شريكك وغيّر فيك شيء؟", level: "deep" },
+  { text: "وش الجانب منك اللي تحس إن شريكك يحبه أكثر من نفسك؟", level: "deep" },
+  { text: "أيش أكثر شيء يخليك تبتسم لما تتذكره من ذكرياتكم؟", level: "deep" },
+  { text: "وش الشيء اللي لو رجعتم للبداية تسوونه بشكل مختلف؟", level: "deep" },
+  { text: "أيش اللحظة اللي قررت فيها بقلبك — هذا هو؟", level: "deep" },
+  { text: "وش الشيء في شريكك تحس إنه خُلق فقط عشانك؟", level: "deep" },
+  { text: "وش أكثر تضحية قدّمها شريكك وما نسيتها أبداً؟", level: "deep" },
+  { text: "أيش الشيء اللي يخليك تحس إن شريكك يراك فعلاً — مش بس يشوفك؟", level: "deep" },
+  { text: "أيش الشيء اللي تتمنى شريكك يعرفه عن مشاعرك الحين؟", level: "deep" },
+  { text: "وش الشيء اللي تحب شريكك يعرفه عنك ولا أحد يعرفه؟", level: "deep" },
+  { text: "أيش الشيء اللي تمنيت يحدث بينكم ولم يحدث بعد؟", level: "deep" },
+  { text: "وش اللحظة اللي حسيت فيها إني خذلتك ولا قلت لي؟", level: "deep" },
+  { text: "وش الشي اللي تغيّر فيك من يوم ما ارتبطنا وتحسه للأحسن؟", level: "deep" },
+
+  { text: "ضعوا جباهكم مع بعض واسكتوا وتنفسوا سوا", level: "hot" },
+  { text: "اهمس في أذن شريكك بأعمق شيء تحس فيه الحين", level: "hot" },
+  { text: "امسكوا أيدي بعض وابقوا كذا لبقية السؤالين الجايين", level: "hot" },
+  { text: "انظروا في عيون بعض دقيقة كاملة بدون كلام ولا ضحك", level: "hot" },
+  { text: "اكتب على يد شريكك بإصبعك شيء تحس فيه — يخمّن أيش", level: "hot" },
+  { text: "احضنوا بعض حضن ما تحركون فيه 60 ثانية", level: "hot" },
+  { text: "قول لشريكك الجملة اللي تعرف إنها تأثر فيه أكثر شيء", level: "hot" },
+  { text: "اطفئوا النور وتكلموا بشيء ما قلتوه في الضوء", level: "hot" },
+  { text: "أشر على مكان تحبه على جسمك — شريكك يغمض عينيه ويبدأ يقبّلك لحد ما يلقى المكان", level: "hot" },
+  { text: "قبّلوا بعض وخلوها تدوم أطول من المعتاد", level: "hot" },
+  { text: "قولوا لبعض بالتفصيل أكثر لحظة تمنيتم فيها توقفون الوقت", level: "hot" },
+  { text: "تبادلوا أحلى رسالة صوتية الحين — ما تسمعونها إلا بعد اللعبة", level: "hot" },
+  { text: "احكوا لبعض عن أول لحظة أحسستم فيها بشيء تجاه الثاني", level: "hot" },
+  { text: "ضعوا أيديكم على قلب بعض واسكتوا 30 ثانية", level: "hot" },
+  { text: "قول لشريكك شيء تخجل منه وما قلته من قبل", level: "hot" },
+  { text: "اهمسوا لبعض بأكثر شيء تتمنونه الليلة", level: "hot" },
+  { text: "قبّل شريكك في مكان ما توقعه", level: "hot" },
+  { text: "قولوا لبعض بصوت واضح أكثر شيء يجنّنكم في الثاني", level: "hot" },
+  { text: "ضع يديك على وجه شريكك وقبّله بهدوء", level: "hot" },
+  { text: "احضنوا بعض واهمسوا بأحلى شيء تحسونه الحين", level: "hot" },
+  { text: "اتفقوا على كلمة سرية بينكم — لما أحدكم يقولها يعني أنا أحتاجك الحين", level: "hot" },
+  { text: "قولوا لبعض 5 أشياء تحبونها في بعض — بالتناوب وبدون تفكير", level: "hot" },
+  { text: "قل 5 أماكن تحبها في شريكك... وقبّلها الحين", level: "hot" },
+  { text: "وش أحلى حركة أسويها لك وتحب أسويها دايم — حضن؟ قبلة؟ سوّوها الحين", level: "hot" },
+  { text: "كيف تحب أكون معك في علاقتنا الحميمية — وفيه شي تتمناه ومستحي تقوله؟", level: "hot" },
+  { text: "لو بحقق لك الحين طلب أو حركة ودك أسويها لك — وش بتكون؟", level: "hot" },
+
+  { text: "وش الشيء اللي يضايقك فيني وتتمنى أغيّره؟", level: "understand" },
+  { text: "كيف تحب نتفاهم إذا اختلفنا في شيء؟", level: "understand" },
+  { text: "كيف تحب أراضيك وقت الزعل؟", level: "understand" },
+  { text: "لما تعصب — تحتاج مني أهدّيك، أتركك، أو أبقى جنبك بصمت؟", level: "understand" },
+  { text: "لما تزعل مني — تحب أبادر أنا أو تحتاج وقت لوحدك أول؟", level: "understand" },
+  { text: "لما تنكسر — وش الشيء اللي لو سويته يجمعك من جديد؟", level: "understand" },
+  { text: "لما تبتعد فجأة — وش السبب اللي ما تقوله عادةً؟", level: "understand" },
+  { text: "وش الشيء اللي أسويه بدون قصد ويأثر فيك؟", level: "understand" },
+  { text: "كيف أعرف إنك تحتاجني وأنت ساكت؟", level: "understand" },
+  { text: "وش الشيء اللي تتمنى أفهمه عنك ولا أحد فهمه قبل؟", level: "understand" },
+  { text: "كيف تبيني أوقف جنبك وقت الضغط — بكلام، بصمت، أم بحضور بس؟", level: "understand" },
+  { text: "لو تقدر تغير شيء واحد في طريقة حياتنا سوا — أيش تغير؟", level: "understand" },
+  { text: "وش الشيء اللي أسويه ويخليك تحس إني ما أسمعك فعلاً؟", level: "understand" },
+  { text: "لما أزعل وأسكت — وش أول شي تحب تسويه؟", level: "understand" },
+  { text: "وش الطريقة اللي تحب أنتقدك فيها لو غلطت؟", level: "understand" },
+  { text: "وش الشيء اللي تحتاجه مني بعد يوم مرهق؟", level: "understand" },
+  { text: "لما أكون متضايقة وما أقول السبب — تحب تسأل ولا تخليني لين أهدى؟", level: "understand" },
+  { text: "وش الشي اللي أقوله بنيّة طيبة وأحياناً يوصلك غلط؟", level: "understand" },
+  { text: "كيف تحب نقرر بالأمور الكبيرة — نتناقش طويل ولا نحسمها بسرعة؟", level: "understand" },
+  { text: "وش الشيء اللي تحس إني ما أقدّره فيك كفاية وتبيني أقدّره؟", level: "understand" },
+  { text: "لما تحتاج مساحة لحالك — كيف أعرف بدون ما تقول؟", level: "understand" },
+  { text: "وش الشيء اللي لو تغيّر بطريقة كلامنا يفرق معك كثير؟", level: "understand" },
+  { text: "وش الشي اللي تحس إني أشوفه فيك وأنت ما تشوفه في نفسك؟", level: "understand" },
+  { text: "وش أكثر لحظة حسيت فيها إني بعيدة عنك وأنا جنبك؟", level: "understand" },
+  { text: "وش أصعب قرار خذته عشاني وما عرفت عنه؟", level: "understand" },
+  { text: "وش معنى الحب بالنسبة لك؟", level: "understand" },
+  { text: "كيف تحب إني أعبّر عن حبي واهتمامي لك؟", level: "understand" },
+  { text: "كيف تحب نقضي وقتنا سوا بعيد عن كل شي؟", level: "understand" },
+  { text: "تحب التجديد ولا روتين ثابت نرتاح عليه؟", level: "understand" },
+  { text: "وش الشي اللي تتمنى أسويه لك ومستحي تطلبه؟", level: "understand" },
+
+  { text: "وش الشيء اللي ما تتنازل عنه أبداً مهما كان؟", level: "values" },
+  { text: "وش الشيء اللي لو صار مني تحس إنه تجاوز حقيقي لحدودك؟", level: "values" },
+  { text: "وش أهم قيمة تتمنى تكون أساس بيتنا؟", level: "values" },
+  { text: "وش الشيء اللي تعتبره خط أحمر وما تكلمنا عنه؟", level: "values" },
+  { text: "لو اضطررنا نختار بين راحتنا ورضا الناس — وش تختار؟", level: "values" },
+  { text: "وش أكبر شي تخاف يصير لعلاقتنا؟", level: "values" },
+  { text: "وش الشيء اللي يقلقك فيني وما قلته لي؟", level: "values" },
+  { text: "وش أكثر شي تخاف تفقده في حياتك؟", level: "values" },
+  { text: "وش الشي اللي تخاف أشوفه فيك وأتغير تجاهك؟", level: "values" },
+  { text: "وش الشيء اللي شفته بأهلك وقررت ما تكرره معنا؟", level: "values" },
+  { text: "وش الشيء اللي شفته بأهلك وتتمنى ننقله لبيتنا؟", level: "values" },
+  { text: "كيف تحب نتعامل مع تدخّل الأهل في حياتنا؟", level: "values" },
+  { text: "وش الشيء اللي تعلمته عن الحب قبل ما نتقابل؟", level: "values" },
+  { text: "وش الجانب فيك اللي تتمنى تغيّره لو تقدر؟", level: "values" },
+  { text: "وش الشيء اللي مريت فيه قبلي وأثر في طريقة حبك؟", level: "values" },
+  { text: "وش الشيء اللي تعلمته عن نفسك بعد ما ارتبطنا؟", level: "values" },
+  { text: "وش الشي اللي تحس إنك ما زلت تتعلمه في نفسك؟", level: "values" },
+  { text: "وش الشي اللي كنت متأكد إنك تبيه في شريك حياة... وطلع مو مهم فعلاً؟", level: "values" },
+  { text: "لو ما فيه أي قيود — وش الحياة اللي تتمناها لنا؟", level: "values" },
+  { text: "وش الشيء اللي تحس إنك ضحيت فيه عشان علاقتنا؟", level: "values" },
+  { text: "وش الشيء اللي تبيني أدعمك فيه أكثر؟", level: "values" },
+  { text: "وش الحلم اللي تخاف تقوله لي عشان تحس إنه بعيد؟", level: "values" },
+  { text: "وش الشي اللي تتمنى لو بدأنا فيه من أول يوم؟", level: "values" },
+  { text: "وش الشي اللي تتمنى نتعلمه سوا مع الوقت؟", level: "values" },
+  { text: "لو فيه هدف نبي نحققه ونسعى له من بكرة — وش بيكون؟", level: "values", note: "اتفقوا عليه وابدأوا فيه فعلاً من بكرة" },
+  { text: "لو تكتب وعد واحد لعلاقتنا — وش يكون؟", level: "values" },
+];
+
+const freeQuestions = [
+  { text: "وش الحركة اللي لو سواها أحدكم تخلي الثاني يذوب فوراً؟", level: "deep" },
+  { text: "لو تكتب جملة وحدة تلخص علاقتكم — أيش تكتب؟", level: "deep" },
+  { text: "وصّف اللحظة اللي حسيت فيها إنك تحب الثاني أكثر شيء في حياتك", level: "deep" },
+  { text: "وش الشيء اللي يجعلك تحس إن الثاني يحبك بدون ما يقول كلمة؟", level: "deep" },
+  { text: "أيش أكثر شيء تخاف تقوله للثاني وما قلته لحد الآن؟", level: "deep" },
+  { text: "لو تصف حب الثاني لك بلون — أيش اللون ولماذا؟", level: "deep" },
+  { text: "وش الشيء في الثاني تحس إنه خُلق فقط عشانك؟", level: "deep" },
+  { text: "أيش اللحظة اللي قررت فيها بقلبك — هذا هو؟", level: "deep" },
+  { text: "وش الشيء اللي تحب الثاني يعرفه عنك ولا أحد يعرفه؟", level: "deep" },
+  { text: "أشر على مكان تحبه على جسمك — الثاني يغمض عينيه ويبدأ يقبّلك لحد ما يلقى المكان", level: "hot" },
+];
+
+const FREE_LIMIT = 10;
+const IS_LOCKED = true;
+
+let activeList = [];
+let current = 0;
+
+function getLevelClass(level) {
+  if (level === 'deep') return 'level-badge level-deep';
+  if (level === 'hot') return 'level-badge level-hot';
+  if (level === 'values') return 'level-badge level-values';
+  return 'level-badge level-understand';
+}
+function getLevelText(level) {
+  if (level === 'deep') return '💙 عميقة';
+  if (level === 'hot') return '🔥 تحدي';
+  if (level === 'values') return '🌱 قيم ومستقبل';
+  return '💚 فهم بعض';
+}
+
+function startCategory(cat) {
+  if (IS_LOCKED) {
+    activeList = [...freeQuestions];
+  } else if (cat === 'all') {
+    activeList = [...allQuestions].sort(function() { return Math.random() - 0.5; });
+  } else {
+    activeList = allQuestions.filter(function(q) { return q.level === cat; }).sort(function() { return Math.random() - 0.5; });
+  }
+  current = 0;
+  document.getElementById('picker').style.display = 'none';
+  document.getElementById('gameSection').style.display = 'block';
+  document.getElementById('endScreen').style.display = 'none';
+  document.getElementById('lockedScreen').style.display = 'none';
+  showQuestion();
+}
+
+function backToPicker() {
+  document.getElementById('picker').style.display = 'block';
+  document.getElementById('gameSection').style.display = 'none';
+  document.getElementById('endScreen').style.display = 'none';
+  document.getElementById('lockedScreen').style.display = 'none';
+}
+
+function renderProgress() {
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
+  const total = IS_LOCKED ? FREE_LIMIT : activeList.length;
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === current ? ' active' : i < current ? ' done' : '');
+    p.appendChild(dot);
+  }
+}
+
+function showQuestion() {
+  if (IS_LOCKED && current >= FREE_LIMIT) { showLocked(); return; }
+  if (current >= activeList.length) { showEnd(); return; }
+  const q = activeList[current];
+  const badge = document.getElementById('qLevel');
+  badge.className = getLevelClass(q.level);
+  badge.textContent = getLevelText(q.level);
+  const total = IS_LOCKED ? FREE_LIMIT : activeList.length;
+  document.getElementById('qNumber').textContent = IS_LOCKED
+    ? 'سؤال ' + (current + 1) + ' من ' + total + ' (تجربة مجانية)'
+    : 'سؤال ' + (current + 1) + ' من ' + total;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('qNote').textContent = q.note || '';
+  document.getElementById('prevBtn').disabled = current === 0;
+  renderProgress();
+}
+
+function nextQuestion() { current++; showQuestion(); }
+function skipQuestion() { current++; showQuestion(); }
+function prevQuestion() { if (current > 0) { current--; showQuestion(); } }
+
+function showEnd() {
+  document.getElementById('gameSection').style.display = 'none';
+  document.getElementById('endScreen').style.display = 'flex';
+}
+
+function showLocked() {
+  document.getElementById('gameSection').style.display = 'none';
+  document.getElementById('lockedScreen').style.display = 'flex';
+}
+
+function subscribeLocked() {
+  const email = document.getElementById('lockedEmailInput').value;
+  if (email && email.indexOf('@') > -1) {
+    fetch('https://script.google.com/macros/s/AKfycbzGsubsZ1uL3ffrLKr0nh-Z_OjhMkayFTyFtr8O7WwInzSxDwIt9DXoTqG1bP-WGeIyRg/exec', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'subscribe', email: email })
+    });
+    alert('تم التسجيل! راح نعلمك أول ما يفتح المحتوى كامل 💌');
+    document.getElementById('lockedEmailInput').value = '';
+  } else {
+    alert('يرجى إدخال بريد إلكتروني صحيح');
+  }
+}
+
+const container = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const star = document.createElement('div');
+  star.classList.add('star');
+  const size = Math.random() * 2.5 + 0.5;
+  star.style.cssText = 'width:' + size + 'px; height:' + size + 'px; top:' + (Math.random() * 100) + '%; left:' + (Math.random() * 100) + '%; animation-delay:' + (Math.random() * 3) + 's; animation-duration:' + (2 + Math.random() * 3) + 's;';
+  container.appendChild(star);
+}
+</script>
+</body>
+</html>

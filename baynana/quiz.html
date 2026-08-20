@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>بيننا — اختبار التوافق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&family=Noto+Sans+Arabic:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; background: #0d0d1a; color: #f0e6d3; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-x: hidden; }
+.stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite alternate; }
+@keyframes twinkle { from { opacity: 0.2; } to { opacity: 1; } }
+.wrap { position: relative; z-index: 1; width: 100%; max-width: 600px; text-align: center; }
+.logo { font-size: 14px; letter-spacing: 6px; color: #c9a96e; margin-bottom: 30px; }
+
+/* intro */
+.intro { background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.3); border-radius: 24px; padding: 50px 36px; }
+.intro h1 { font-size: 28px; color: #f0e6d3; margin-bottom: 16px; }
+.intro p { font-size: 15px; color: #8a7a6a; line-height: 1.8; margin-bottom: 24px; }
+.privacy-note { background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.2); border-radius: 14px; padding: 16px; font-size: 13px; color: #c9a96e; margin-bottom: 28px; line-height: 1.7; }
+
+.btn { padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 700; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; border: none; cursor: pointer; transition: all 0.3s; }
+.btn-main { background: linear-gradient(135deg, #c9a96e, #a07840); color: #0d0d1a; }
+.btn-main:hover { opacity: 0.85; transform: translateY(-2px); }
+.btn-outline { background: transparent; color: #c9a96e; border: 1px solid rgba(201,169,110,0.4); }
+
+/* quiz card */
+.progress { display: flex; gap: 5px; justify-content: center; margin-bottom: 26px; flex-wrap: wrap; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(201,169,110,0.2); transition: all 0.3s; }
+.dot.active { background: #c9a96e; transform: scale(1.3); }
+.dot.done { background: rgba(201,169,110,0.5); }
+
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.3); border-radius: 24px; padding: 44px 32px; margin-bottom: 24px; min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.q-category { font-size: 12px; color: #c9a96e; letter-spacing: 3px; margin-bottom: 16px; }
+.q-text { font-size: clamp(18px, 3.5vw, 22px); color: #f0e6d3; line-height: 1.7; margin-bottom: 30px; }
+.options { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.option { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px 20px; font-size: 15px; color: #f0e6d3; cursor: pointer; transition: all 0.25s; text-align: right; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; }
+.option:hover { background: rgba(201,169,110,0.1); border-color: rgba(201,169,110,0.5); }
+
+/* results */
+.results { display: none; }
+.results h2 { font-size: 26px; color: #c9a96e; margin-bottom: 6px; }
+.results .overall { font-size: 48px; font-weight: 700; color: #f0e6d3; margin: 16px 0; }
+.results .overall span { font-size: 20px; color: #8a7a6a; }
+
+.bar-row { text-align: right; margin-bottom: 18px; }
+.bar-label { display: flex; justify-content: space-between; font-size: 13px; color: #b8a888; margin-bottom: 6px; }
+.bar-bg { background: rgba(255,255,255,0.06); border-radius: 20px; height: 10px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, #a07840, #c9a96e); width: 0%; transition: width 1s ease; }
+
+.section-title { font-size: 15px; color: #c9a96e; margin: 28px 0 14px; text-align: right; letter-spacing: 1px; }
+.tag-list { display: flex; flex-direction: column; gap: 10px; }
+.tag-item { background: rgba(255,255,255,0.03); border-right: 3px solid #c9a96e; border-radius: 10px; padding: 12px 16px; text-align: right; font-size: 14px; color: #e6d8c3; line-height: 1.6; }
+.tag-item.weak { border-right-color: #f09090; }
+
+.share-box { margin-top: 30px; padding: 24px; background: rgba(201,169,110,0.06); border-radius: 18px; border: 1px solid rgba(201,169,110,0.2); }
+.share-box p { font-size: 14px; color: #b8a888; margin-bottom: 14px; }
+.checkbox-row { display: flex; align-items: center; gap: 8px; justify-content: center; font-size: 13px; color: #8a7a6a; margin-top: 14px; }
+
+.email-box { margin-top: 24px; padding: 24px; background: rgba(255,255,255,0.03); border-radius: 18px; }
+.email-box p { font-size: 14px; color: #b8a888; margin-bottom: 14px; }
+.email-box input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #f0e6d3; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom: 12px; font-size: 14px; }
+.email-box input::placeholder { color: #5a4a3a; }
+
+.locked-note { font-size: 12px; color: #5a4a3a; margin-top: 30px; }
+.top-bar { position: relative; z-index: 1; width: 100%; max-width: 600px; display: flex; justify-content: flex-start; margin-bottom: 10px; }
+.home-link { color: #5a4a3a; font-size: 13px; text-decoration: none; }
+.home-link:hover { color: #c9a96e; }
+.btn-prev { background: transparent; color: #5a4a3a; border: 1px solid rgba(255,255,255,0.08); }
+.btn-prev:hover { color: #c9a96e; border-color: rgba(201,169,110,0.4); }
+.btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
+.quiz-controls { display: flex; justify-content: center; margin-top: 16px; }
+.results-home { display: block; text-align: center; margin-top: 30px; color: #5a4a3a; font-size: 13px; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="top-bar">
+  <a href="index.html" class="home-link">← الرئيسية</a>
+</div>
+<div class="wrap">
+  <div class="logo">بيننا</div>
+
+  <!-- INTRO -->
+  <div class="intro" id="intro">
+    <h1>اختبار التوافق 🔮</h1>
+    <p>30 سؤال يكشف نقاط قوتكم ونقاط تحتاجون تشتغلون عليها — كل واحد يجاوب لحاله، وفي النهاية تشوفون تحليل كامل لعلاقتكم عبر 7 جوانب.</p>
+    <div class="privacy-note">🔒 إجاباتك ما بتطلع لشريكك — كل واحد يجاوب لحاله بخصوصية تامة. جاوبوا بصدق عشان النتيجة تكون دقيقة</div>
+    <p style="font-size:13px; color:#c9a96e; margin-bottom:16px;">🌙 الاختبار يفتح قريباً مع الإطلاق الرسمي — سجلي إيميلك وكوني أول من يجرب</p>
+    <input type="email" id="introEmailInput" placeholder="بريدكم الإلكتروني" style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#f0e6d3; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom:14px; font-size:14px;"/>
+    <button class="btn btn-main" style="width:100%;" onclick="subscribeIntro()">سجلي اهتمامك 💌</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quizSection" style="display:none;">
+    <div class="progress" id="progress"></div>
+    <div class="card">
+      <div class="q-category" id="qCategory"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options" id="qOptions"></div>
+    </div>
+    <div class="quiz-controls">
+      <button class="btn btn-prev" id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+    <h2>نتيجة توافقكم</h2>
+    <div class="overall" id="overallScore">--<span>%</span></div>
+
+    <div id="barsContainer"></div>
+
+    <div class="section-title">✨ نقاط القوة</div>
+    <div class="tag-list" id="strengthsList"></div>
+
+    <div class="section-title">💡 تحتاجون تركزون عليها</div>
+    <div class="tag-list" id="weaknessesList"></div>
+
+    <div class="share-box">
+      <p>شاركوا نتيجتكم بصورة مع أحبابكم 📸</p>
+      <button class="btn btn-outline" onclick="alert('قريباً: تحميل صورة النتيجة')">تحميل صورة النتيجة</button>
+      <div class="checkbox-row">
+        <input type="checkbox" id="allowShare"/>
+        <label for="allowShare">أسمح لـ"بيننا" تنشر نتيجتي (بدون أسماء) كمثال ملهم</label>
+      </div>
+    </div>
+
+    <div class="email-box">
+      <p>💌 اشتركوا في تحديات الأسبوع — مبنية على نتيجتكم بالضبط</p>
+      <input type="email" id="emailInput" placeholder="بريدكم الإلكتروني"/>
+      <button class="btn btn-main" style="width:100%;" onclick="subscribeEmail()">اشترك مجاناً</button>
+    </div>
+
+    <p class="locked-note">تحديات الأسبوع متاحة لمن اشترى الاختبار أو الباقة الكاملة</p>
+    <a href="index.html" class="results-home">العودة للرئيسية</a>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // التواصل
+  { cat: "💬 التواصل", text: "لما يصير خلاف بسيط، إيش يصير الغالب؟", options: [
+    { t: "نتكلم ونحله بسرعة", v: 3 }, { t: "نأجل الكلام لين يهدى الجو", v: 2 }, { t: "نتجنب الموضوع لين ينسى", v: 1 }
+  ], key: "communication" },
+  { cat: "💬 التواصل", text: "كم مرة تحسون إنكم تفهمون بعض بدون ما تشرحون كثير؟", options: [
+    { t: "دائماً تقريباً", v: 3 }, { t: "أحياناً", v: 2 }, { t: "نادراً", v: 1 }
+  ], key: "communication" },
+  { cat: "💬 التواصل", text: "لما تحتاجين تعبّرين عن مشاعرك، شريكك:", options: [
+    { t: "يسمع باهتمام كامل", v: 3 }, { t: "يسمع بس مشغول أحياناً", v: 2 }, { t: "صعب يفتح المجال", v: 1 }
+  ], key: "communication" },
+  { cat: "💬 التواصل", text: "تتكلمون عن مواضيع عميقة (مثل: أحلامكم، مخاوفكم، أهدافكم المستقبلية) كم مرة؟", options: [
+    { t: "بشكل منتظم", v: 3 }, { t: "من وقت لوقت", v: 2 }, { t: "نادراً جداً", v: 1 }
+  ], key: "communication" },
+
+  // الوقت المشترك
+  { cat: "⏳ الوقت المشترك", text: "آخر مرة قضيتوا وقت بدون جوالات، كانت متى؟", options: [
+    { t: "هالأسبوع", v: 3 }, { t: "هالشهر", v: 2 }, { t: "ما أتذكر", v: 1 }
+  ], key: "time" },
+  { cat: "⏳ الوقت المشترك", text: "تحسون إن وقتكم مع بعض كافي؟", options: [
+    { t: "أكيد", v: 3 }, { t: "نص ونص", v: 2 }, { t: "لا، قليل جداً", v: 1 }
+  ], key: "time" },
+  { cat: "⏳ الوقت المشترك", text: "تسوون أنشطة جديدة سوا (مو روتين) بشكل:", options: [
+    { t: "منتظم", v: 3 }, { t: "نادر", v: 2 }, { t: "أبداً تقريباً", v: 1 }
+  ], key: "time" },
+  { cat: "⏳ الوقت المشترك", text: "لو تقيّمون جودة وقتكم مع بعض من 10:", options: [
+    { t: "8-10", v: 3 }, { t: "5-7", v: 2 }, { t: "أقل من 5", v: 1 }
+  ], key: "time" },
+
+  // الثقة والأمان
+  { cat: "🛡️ الثقة والأمان", text: "تحسين بأمان تام تشاركين أفكارك بدون خوف من الحكم؟", options: [
+    { t: "نعم دائماً", v: 3 }, { t: "أحياناً", v: 2 }, { t: "لا، أتردد كثير", v: 1 }
+  ], key: "trust" },
+  { cat: "🛡️ الثقة والأمان", text: "لو صار سوء فهم، أول رد فعل شريكك:", options: [
+    { t: "يفترض فيني حسن نية", v: 3 }, { t: "يشك بس يسمع تفسيري", v: 2 }, { t: "يشك ويصعب يقتنع", v: 1 }
+  ], key: "trust" },
+  { cat: "🛡️ الثقة والأمان", text: "تحسون إن فيه أسرار أو أشياء ما تتشاركونها؟", options: [
+    { t: "لا، شفافين تماماً", v: 3 }, { t: "بعض الأشياء البسيطة", v: 2 }, { t: "فيه أشياء كثير", v: 1 }
+  ], key: "trust" },
+  { cat: "🛡️ الثقة والأمان", text: "مستوى الاستقرار اللي تحسونه في العلاقة:", options: [
+    { t: "عالي جداً", v: 3 }, { t: "متوسط", v: 2 }, { t: "فيه قلق مستمر", v: 1 }
+  ], key: "trust" },
+
+  // الحميمية
+  { cat: "💞 الحميمية", text: "التعبير الجسدي عن الحب (حضن، لمسة، قبلة) عندكم:", options: [
+    { t: "موجود بشكل طبيعي يومي", v: 3 }, { t: "موجود بس مو كثير", v: 2 }, { t: "نادر جداً", v: 1 }
+  ], key: "intimacy" },
+  { cat: "💞 الحميمية", text: "تحسون إن شريكك يعرف كيف يخليك تحسين بالحب؟", options: [
+    { t: "نعم تماماً", v: 3 }, { t: "لحد ما", v: 2 }, { t: "لا، فيه فجوة", v: 1 }
+  ], key: "intimacy" },
+  { cat: "💞 الحميمية", text: "تقدرون تتكلمون بصراحة عن رغباتكم واحتياجاتكم الحميمية؟", options: [
+    { t: "بكل أريحية", v: 3 }, { t: "بصعوبة أحياناً", v: 2 }, { t: "ما نتكلم فيها", v: 1 }
+  ], key: "intimacy" },
+  { cat: "💞 الحميمية", text: "تحسون إن حياتكم الحميمية مُرضية للطرفين؟", options: [
+    { t: "نعم تماماً", v: 3 }, { t: "لحد ما", v: 2 }, { t: "فيها فجوة واضحة", v: 1 }
+  ], key: "intimacy" },
+  { cat: "💞 الحميمية", text: "لما يكون أحدكم مو في المزاج، كيف يتعامل الثاني؟", options: [
+    { t: "يتفهم بدون ضغط", v: 3 }, { t: "يتفهم بس ينزعج", v: 2 }, { t: "يصير فيه توتر", v: 1 }
+  ], key: "intimacy" },
+  { cat: "💞 الحميمية", text: "تحسون إن القرب الحميمي بينكم يزيد بمرور الوقت ولا يقل؟", options: [
+    { t: "يزيد", v: 3 }, { t: "ثابت", v: 2 }, { t: "يقل", v: 1 }
+  ], key: "intimacy" },
+
+  // حل الخلافات
+  { cat: "🤝 حل الخلافات", text: "لما تختلفون، الأسلوب الغالب:", options: [
+    { t: "نتفاهم بهدوء", v: 3 }, { t: "نتناقش بصوت عالي بس نحله", v: 2 }, { t: "نتصامت ونتجنب", v: 1 }
+  ], key: "conflict" },
+  { cat: "🤝 حل الخلافات", text: "بعد الخلاف، كم يطول رجوع الأمور طبيعية؟", options: [
+    { t: "بسرعة (ساعات)", v: 3 }, { t: "يوم أو يومين", v: 2 }, { t: "يطول أكثر من كذا", v: 1 }
+  ], key: "conflict" },
+  { cat: "🤝 حل الخلافات", text: "تحسون إن الخلافات تتكرر على نفس المواضيع؟", options: [
+    { t: "لا، نحلها ونتجاوزها", v: 3 }, { t: "أحياناً تتكرر", v: 2 }, { t: "نفس المواضيع دائماً", v: 1 }
+  ], key: "conflict" },
+  { cat: "🤝 حل الخلافات", text: "في الخلاف، هل تحسون إن رأيكم يُسمع ويُحترم؟", options: [
+    { t: "نعم دائماً", v: 3 }, { t: "أحياناً", v: 2 }, { t: "نادراً", v: 1 }
+  ], key: "conflict" },
+
+  // الدعم والتقدير
+  { cat: "🌟 الدعم والتقدير", text: "تحسين إن شريكك يقدّر مجهودك (بالبيت، الشغل، إلخ)؟", options: [
+    { t: "نعم بوضوح", v: 3 }, { t: "أحياناً", v: 2 }, { t: "نادراً يعبر عنه", v: 1 }
+  ], key: "support" },
+  { cat: "🌟 الدعم والتقدير", text: "وقت الضغط أو التعب، شريكك:", options: [
+    { t: "يدعمني فعلياً", v: 3 }, { t: "يحاول بس مو دايم", v: 2 }, { t: "ما ألقى الدعم الكافي", v: 1 }
+  ], key: "support" },
+  { cat: "🌟 الدعم والتقدير", text: "تسمعون كلمات تقدير وثناء من بعض؟", options: [
+    { t: "بشكل منتظم", v: 3 }, { t: "أحياناً", v: 2 }, { t: "نادراً جداً", v: 1 }
+  ], key: "support" },
+  { cat: "🌟 الدعم والتقدير", text: "تحسون إن إنجازاتكم الشخصية تُحتفى فيها من الثاني؟", options: [
+    { t: "نعم دائماً", v: 3 }, { t: "أحياناً", v: 2 }, { t: "نادراً", v: 1 }
+  ], key: "support" },
+
+  // القيم والمستقبل
+  { cat: "🌱 القيم والمستقبل", text: "تحسون إن نظرتكم للمستقبل متقاربة (السكن، العمل، الأولويات)؟", options: [
+    { t: "متقاربة جداً", v: 3 }, { t: "متقاربة نسبياً", v: 2 }, { t: "مختلفة كثير", v: 1 }
+  ], key: "values" },
+  { cat: "🌱 القيم والمستقبل", text: "تكلمتم بوضوح عن توقعاتكم من بعض على المدى البعيد؟", options: [
+    { t: "نعم بالتفصيل", v: 3 }, { t: "بشكل عام بس", v: 2 }, { t: "ما تكلمنا فيها", v: 1 }
+  ], key: "values" },
+  { cat: "🌱 القيم والمستقبل", text: "تحسون إن قيمكم الأساسية في الحياة متوافقة؟", options: [
+    { t: "متوافقة تماماً", v: 3 }, { t: "فيها اختلافات بسيطة", v: 2 }, { t: "مختلفة بشكل واضح", v: 1 }
+  ], key: "values" },
+  { cat: "🌱 القيم والمستقبل", text: "لما تتخذون قرار كبير، تحسون إنكم تفكرون بنفس الاتجاه؟", options: [
+    { t: "نعم غالباً", v: 3 }, { t: "أحياناً نختلف", v: 2 }, { t: "نادراً نتفق", v: 1 }
+  ], key: "values" },
+];
+
+const categoryNames = {
+  communication: "التواصل",
+  time: "الوقت المشترك",
+  trust: "الثقة والأمان",
+  intimacy: "الحميمية",
+  conflict: "حل الخلافات",
+  support: "الدعم والتقدير",
+  values: "القيم والمستقبل"
+};
+
+const suggestions = {
+  communication: "خصصوا 10 دقائق يومياً للكلام بدون جوالات أو مقاطعة",
+  time: "حددوا موعد أسبوعي ثابت لبعض — حتى لو ساعة وحدة",
+  trust: "شاركوا فكرة أو خوف ما شاركتوه قبل، بدون خوف من الحكم",
+  intimacy: "عبّروا عن حبكم جسدياً كل يوم — حتى بلمسة بسيطة",
+  conflict: "لما تختلفون، اسألوا 'وش تحتاج مني الحين' بدل الجدال",
+  support: "قولوا كلمة شكر أو تقدير واضحة لبعض كل يوم",
+  values: "خصصوا جلسة تتكلمون فيها عن مستقبلكم بوضوح — بدون قرارات، بس مصارحة"
+};
+
+let current = 0;
+let scores = { communication: 0, time: 0, trust: 0, intimacy: 0, conflict: 0, support: 0, values: 0 };
+let answerHistory = [];
+
+function startQuiz() {
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('quizSection').style.display = 'block';
+  showQuestion();
+}
+
+function subscribeIntro() {
+  const email = document.getElementById('introEmailInput').value;
+  if (email && email.includes('@')) {
+    fetch('https://script.google.com/macros/s/AKfycbzGsubsZ1uL3ffrLKr0nh-Z_OjhMkayFTyFtr8O7WwInzSxDwIt9DXoTqG1bP-WGeIyRg/exec', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'subscribe', email: email })
+    });
+    alert('تم التسجيل! راح نعلمك أول ما يفتح الاختبار 💌');
+    document.getElementById('introEmailInput').value = '';
+  } else {
+    alert('يرجى إدخال بريد إلكتروني صحيح');
+  }
+}
+
+function renderProgress() {
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
+  questions.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === current ? ' active' : i < current ? ' done' : '');
+    p.appendChild(dot);
+  });
+}
+
+function showQuestion() {
+  if (current >= questions.length) { showResults(); return; }
+  const q = questions[current];
+  document.getElementById('qCategory').textContent = q.cat + ` — سؤال ${current + 1} من ${questions.length}`;
+  document.getElementById('qText').textContent = q.text;
+  const optsDiv = document.getElementById('qOptions');
+  optsDiv.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'option';
+    btn.textContent = opt.t;
+    btn.onclick = () => selectAnswer(q.key, opt.v);
+    optsDiv.appendChild(btn);
+  });
+  document.getElementById('prevBtn').disabled = current === 0;
+  renderProgress();
+}
+
+function selectAnswer(key, value) {
+  scores[key] += value;
+  answerHistory.push({ key, value });
+  current++;
+  showQuestion();
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  current--;
+  const last = answerHistory.pop();
+  if (last) { scores[last.key] -= last.value; }
+  showQuestion();
+}
+
+function showResults() {
+  document.getElementById('quizSection').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const percentages = {};
+  Object.keys(scores).forEach(key => {
+    const count = questions.filter(q => q.key === key).length;
+    percentages[key] = Math.round((scores[key] / (count * 3)) * 100);
+  });
+
+  const overall = Math.round(Object.values(percentages).reduce((a,b) => a+b, 0) / Object.keys(percentages).length);
+  document.getElementById('overallScore').innerHTML = overall + '<span>%</span>';
+
+  const barsContainer = document.getElementById('barsContainer');
+  barsContainer.innerHTML = '';
+  Object.keys(percentages).forEach(key => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label"><span>${categoryNames[key]}</span><span>${percentages[key]}%</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${percentages[key]}%"></div></div>
+    `;
+    barsContainer.appendChild(row);
+  });
+
+  const sorted = Object.entries(percentages).sort((a,b) => b[1] - a[1]);
+  const strengths = sorted.slice(0, 2);
+  const weaknesses = sorted.slice(-2);
+
+  const strengthsList = document.getElementById('strengthsList');
+  strengthsList.innerHTML = '';
+  strengths.forEach(([key, val]) => {
+    const item = document.createElement('div');
+    item.className = 'tag-item';
+    item.textContent = `${categoryNames[key]} — علاقتكم قوية في هذا الجانب (${val}%)`;
+    strengthsList.appendChild(item);
+  });
+
+  const weaknessesList = document.getElementById('weaknessesList');
+  weaknessesList.innerHTML = '';
+  weaknesses.forEach(([key, val]) => {
+    const item = document.createElement('div');
+    item.className = 'tag-item weak';
+    item.textContent = `${categoryNames[key]} (${val}%) — ${suggestions[key]}`;
+    weaknessesList.appendChild(item);
+  });
+}
+
+function subscribeEmail() {
+  const email = document.getElementById('emailInput').value;
+  if (email && email.includes('@')) {
+    fetch('https://script.google.com/macros/s/AKfycbzGsubsZ1uL3ffrLKr0nh-Z_OjhMkayFTyFtr8O7WwInzSxDwIt9DXoTqG1bP-WGeIyRg/exec', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'subscribe', email: email })
+    });
+    alert('تم الاشتراك! راح توصلكم تحديات الأسبوع على بريدكم قريباً 💌');
+  } else {
+    alert('يرجى إدخال بريد إلكتروني صحيح');
+  }
+}
+
+// نجوم
+const container = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const star = document.createElement('div');
+  star.classList.add('star');
+  const size = Math.random() * 2.5 + 0.5;
+  star.style.cssText = `width: ${size}px; height: ${size}px; top: ${Math.random() * 100}%; left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 3}s; animation-duration: ${2 + Math.random() * 3}s;`;
+  container.appendChild(star);
+}
+</script>
+</body>
+</html>
