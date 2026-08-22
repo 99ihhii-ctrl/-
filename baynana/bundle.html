@@ -33,6 +33,7 @@ body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sa
 .code-input::placeholder { color: #5a4a3a; }
 .btn { padding: 14px 28px; border-radius: 50px; font-size: 15px; font-weight: 700; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; border: none; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #c9a96e, #a07840); color: #0d0d1a; }
 .btn:hover { opacity: 0.85; transform: translateY(-2px); }
+.btn-outline { background: transparent; color: #c9a96e; border: 1px solid rgba(201,169,110,0.4); }
 .error-msg { display: none; margin-top: 16px; color: #f09090; font-size: 14px; background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.25); border-radius: 12px; padding: 12px 14px; }
 </style>
 </head>
@@ -52,6 +53,8 @@ body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sa
     <input type="text" id="bundleCodeInput" class="code-input" placeholder="أدخلي كودك" autocomplete="off"/>
     <button class="btn" style="width:100%;" onclick="checkBundleCode()">ابدأ</button>
     <div class="error-msg" id="bundleErrorMsg">الكود غير صحيح، تأكدي منه وحاولي مرة ثانية 💛</div>
+    <p style="margin-top:22px; font-size:13px; color:#5a4a3a;">ما عندك كود؟</p>
+    <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="location.href='https://salla.sa/binna-game'">اشتري الآن 🛒</button>
   </div>
 
   <div class="box" id="unlockedBox" style="display:none;">
