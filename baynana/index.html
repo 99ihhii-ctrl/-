@@ -17,17 +17,26 @@ body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sa
 .logo { font-size: 18px; letter-spacing: 6px; color: #c9a96e; margin-bottom: 20px; }
 .title { font-size: clamp(52px, 10vw, 96px); font-weight: 700; color: #f0e6d3; line-height: 1.1; margin-bottom: 16px; }
 .subtitle { font-size: clamp(16px, 3vw, 22px); color: #a89070; font-weight: 300; margin-bottom: 60px; letter-spacing: 2px; }
-.cards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; margin-bottom: 50px; }
-.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.2); border-radius: 20px; padding: 36px 28px; width: 260px; cursor: pointer; transition: all 0.4s ease; text-align: center; }
+.cards { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-bottom: 50px; opacity: 0.85; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.2); border-radius: 15px; padding: 27px 21px; width: 195px; cursor: pointer; transition: all 0.4s ease; text-align: center; }
 .card:hover { background: rgba(201,169,110,0.1); border-color: rgba(201,169,110,0.6); transform: translateY(-6px); }
-.card-icon { font-size: 40px; margin-bottom: 16px; }
-.card-title { font-size: 20px; font-weight: 700; color: #f0e6d3; margin-bottom: 10px; }
-.card-desc { font-size: 14px; color: #8a7a6a; line-height: 1.7; }
-.card-price { margin-top: 20px; font-size: 22px; font-weight: 700; color: #c9a96e; }
+.card-icon { font-size: 30px; margin-bottom: 12px; }
+.card-title { font-size: 15px; font-weight: 700; color: #f0e6d3; margin-bottom: 8px; }
+.card-desc { font-size: 11px; color: #8a7a6a; line-height: 1.6; }
+.card-price { margin-top: 15px; font-size: 17px; font-weight: 700; color: #c9a96e; }
 .btn { margin-top: 16px; display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #c9a96e, #a07840); color: #0d0d1a; border-radius: 50px; font-size: 14px; font-weight: 700; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; border: none; cursor: pointer; transition: opacity 0.3s; }
 .btn:hover { opacity: 0.85; }
+.card .btn { margin-top: 12px; padding: 9px 21px; font-size: 11px; }
 .divider { width: 60px; height: 1px; background: linear-gradient(to right, transparent, #c9a96e, transparent); margin: 0 auto 50px; }
 .tagline { font-size: 13px; color: #5a4a3a; letter-spacing: 3px; }
+.hero-actions { position: relative; z-index: 1; width: 100%; max-width: 520px; margin: 0 auto 50px; background: rgba(255,255,255,0.04); border: 1px solid rgba(201,169,110,0.35); border-radius: 24px; padding: 28px 26px; display: flex; flex-direction: column; gap: 16px; }
+.redeem-row { display: flex; gap: 10px; }
+.redeem-row input { flex: 1; min-width: 0; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #f0e6d3; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; font-size: 15px; text-align: center; }
+.redeem-row input::placeholder { color: #5a4a3a; }
+.redeem-row .btn { margin: 0; white-space: nowrap; }
+.hero-or { font-size: 12px; color: #5a4a3a; letter-spacing: 2px; }
+.btn-buy { margin: 0; width: 100%; padding: 16px 28px; font-size: 16px; }
+@media (max-width: 480px) { .redeem-row { flex-direction: column; } }
 footer { position: relative; z-index: 1; padding: 30px 20px 40px; text-align: center; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
 footer a { color: #5a4a3a; font-size: 12px; text-decoration: none; }
 footer a:hover { color: #c9a96e; }
@@ -39,8 +48,15 @@ footer a:hover { color: #c9a96e; }
 <div class="logo">بيننا</div>
 <h1 class="title">بيننا</h1>
 <p class="subtitle">لأن بينكم أكثر مما تعرفون</p>
+<div class="hero-actions">
+  <div class="redeem-row">
+    <input type="text" id="heroCodeInput" placeholder="أدخلي كودك" autocomplete="off"/>
+    <button class="btn" onclick="heroRedeem()">ابدأ</button>
+  </div>
+  <div class="hero-or">أو</div>
+  <button class="btn btn-buy" onclick="location.href='https://salla.sa/binna-game'">اشتري الآن 🛒</button>
+</div>
 <div class="divider"></div>
-<a href="redeem.html" class="btn" style="margin-bottom:24px; display:inline-block; text-decoration:none;">عندك كود؟ ادخلي هنا</a>
 <div class="cards">
 <div class="card">
 <div class="card-icon">💞</div>
@@ -81,6 +97,16 @@ for (let i = 0; i < 120; i++) {
   star.style.cssText = `width: ${size}px; height: ${size}px; top: ${Math.random() * 100}%; left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 3}s; animation-duration: ${2 + Math.random() * 3}s;`;
   container.appendChild(star);
 }
+
+function heroRedeem() {
+  const val = document.getElementById('heroCodeInput').value.trim();
+  if (val) localStorage.setItem('baynana_code', val.toUpperCase());
+  location.href = 'redeem.html';
+}
+
+document.getElementById('heroCodeInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') heroRedeem();
+});
 </script>
 </body>
 </html>
