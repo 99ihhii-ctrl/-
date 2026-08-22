@@ -28,10 +28,6 @@ body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sa
 .btn:hover { opacity: 0.85; }
 .divider { width: 60px; height: 1px; background: linear-gradient(to right, transparent, #c9a96e, transparent); margin: 0 auto 50px; }
 .tagline { font-size: 13px; color: #5a4a3a; letter-spacing: 3px; }
-.email-section { position: relative; z-index: 1; max-width: 420px; margin: 0 auto 40px; padding: 28px 24px; background: rgba(201,169,110,0.06); border: 1px solid rgba(201,169,110,0.2); border-radius: 18px; text-align: center; }
-.email-section p { font-size: 14px; color: #b8a888; margin-bottom: 14px; }
-.email-section input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #f0e6d3; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom: 12px; font-size: 14px; }
-.email-section input::placeholder { color: #5a4a3a; }
 footer { position: relative; z-index: 1; padding: 30px 20px 40px; text-align: center; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
 footer a { color: #5a4a3a; font-size: 12px; text-decoration: none; }
 footer a:hover { color: #c9a96e; }
@@ -44,6 +40,7 @@ footer a:hover { color: #c9a96e; }
 <h1 class="title">بيننا</h1>
 <p class="subtitle">لأن بينكم أكثر مما تعرفون</p>
 <div class="divider"></div>
+<a href="redeem.html" class="btn" style="margin-bottom:24px; display:inline-block; text-decoration:none;">عندك كود؟ ادخلي هنا</a>
 <div class="cards">
 <div class="card">
 <div class="card-icon">💞</div>
@@ -68,13 +65,7 @@ footer a:hover { color: #c9a96e; }
 </div>
 </div>
 <p class="tagline">كل زوجين لهم عالم خاص — اكتشفوه</p>
-<a href="redeem.html" class="btn" style="margin-top:24px; display:inline-block; text-decoration:none;">عندك كود؟ ادخلي هنا</a>
 </section>
-<div class="email-section" id="email">
-<p>💌 سجلي إيميلك عشان تكونين أول من يعرف عن العروض والتحديثات</p>
-<input type="email" id="homeEmailInput" placeholder="بريدكم الإلكتروني"/>
-<button class="btn" style="width:100%;" onclick="subscribeHomeEmail()">سجلي اهتمامك</button>
-</div>
 <footer>
 <a href="about.html">من نحن</a>
 <a href="privacy.html">سياسة الخصوصية</a>
@@ -89,20 +80,6 @@ for (let i = 0; i < 120; i++) {
   const size = Math.random() * 2.5 + 0.5;
   star.style.cssText = `width: ${size}px; height: ${size}px; top: ${Math.random() * 100}%; left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 3}s; animation-duration: ${2 + Math.random() * 3}s;`;
   container.appendChild(star);
-}
-
-function subscribeHomeEmail() {
-  const email = document.getElementById('homeEmailInput').value;
-  if (email && email.includes('@')) {
-    fetch('https://script.google.com/macros/s/AKfycbzGsubsZ1uL3ffrLKr0nh-Z_OjhMkayFTyFtr8O7WwInzSxDwIt9DXoTqG1bP-WGeIyRg/exec', {
-      method: 'POST',
-      body: JSON.stringify({ type: 'subscribe', email: email })
-    });
-    alert('تم التسجيل! راح نعلمك أول ما يكون كل شيء جاهز 💌');
-    document.getElementById('homeEmailInput').value = '';
-  } else {
-    alert('يرجى إدخال بريد إلكتروني صحيح');
-  }
 }
 </script>
 </body>
