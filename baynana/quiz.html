@@ -65,6 +65,10 @@ body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sa
 .email-box input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #f0e6d3; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom: 12px; font-size: 14px; }
 .email-box input::placeholder { color: #5a4a3a; }
 
+.code-input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #f0e6d3; font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom: 16px; font-size: 16px; text-align: center; letter-spacing: 1px; }
+.code-input::placeholder { color: #5a4a3a; }
+.error-msg { display: none; margin-top: 16px; color: #f09090; font-size: 14px; background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.25); border-radius: 12px; padding: 12px 14px; }
+
 .locked-note { font-size: 12px; color: #5a4a3a; margin-top: 30px; }
 .top-bar { position: relative; z-index: 1; width: 100%; max-width: 600px; display: flex; justify-content: flex-start; margin-bottom: 10px; }
 .home-link { color: #5a4a3a; font-size: 13px; text-decoration: none; }
@@ -86,12 +90,12 @@ body { font-family: 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sa
 
   <!-- INTRO -->
   <div class="intro" id="intro">
-    <h1>اختبار التوافق 🔮</h1>
-    <p>30 سؤال يكشف نقاط قوتكم ونقاط تحتاجون تشتغلون عليها — كل واحد يجاوب لحاله، وفي النهاية تشوفون تحليل كامل لعلاقتكم عبر 7 جوانب.</p>
-    <div class="privacy-note">🔒 إجاباتك ما بتطلع لشريكك — كل واحد يجاوب لحاله بخصوصية تامة. جاوبوا بصدق عشان النتيجة تكون دقيقة</div>
-    <p style="font-size:13px; color:#c9a96e; margin-bottom:16px;">🌙 الاختبار يفتح قريباً مع الإطلاق الرسمي — سجلي إيميلك وكوني أول من يجرب</p>
-    <input type="email" id="introEmailInput" placeholder="بريدكم الإلكتروني" style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#f0e6d3; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, Arial, sans-serif; margin-bottom:14px; font-size:14px;"/>
-    <button class="btn btn-main" style="width:100%;" onclick="subscribeIntro()">سجلي اهتمامك 💌</button>
+    <h1>اكتشفوا نسبة توافقكم الحقيقية 🔮</h1>
+    <p>30 سؤال في 7 محاور يكشف نقاط قوتكم<br>واللي تحتاجون تشتغلون عليه سوا 💛</p>
+    <div class="privacy-note">🔒 إجاباتك ما بتطلع لشريكك — كل واحد يجاوب لحاله بخصوصية تامة</div>
+    <input type="text" id="quizCodeInput" class="code-input" placeholder="أدخلي كودك" autocomplete="off"/>
+    <button class="btn btn-main" style="width:100%;" onclick="checkQuizCode()">ابدأ الاختبار</button>
+    <div class="error-msg" id="quizErrorMsg">الكود غير صحيح، تأكدي منه وحاولي مرة ثانية 💛</div>
   </div>
 
   <!-- QUIZ -->
@@ -277,19 +281,32 @@ function startQuiz() {
   showQuestion();
 }
 
-function subscribeIntro() {
-  const email = document.getElementById('introEmailInput').value;
-  if (email && email.includes('@')) {
-    fetch('https://script.google.com/macros/s/AKfycbzGsubsZ1uL3ffrLKr0nh-Z_OjhMkayFTyFtr8O7WwInzSxDwIt9DXoTqG1bP-WGeIyRg/exec', {
-      method: 'POST',
-      body: JSON.stringify({ type: 'subscribe', email: email })
-    });
-    alert('تم التسجيل! راح نعلمك أول ما يفتح الاختبار 💌');
-    document.getElementById('introEmailInput').value = '';
+function checkQuizCode() {
+  const input = document.getElementById('quizCodeInput');
+  const errorMsg = document.getElementById('quizErrorMsg');
+  const code = input.value.trim().toUpperCase();
+  errorMsg.style.display = 'none';
+  if (code.indexOf('QUIZ-') === 0 || code.indexOf('FULL-') === 0) {
+    localStorage.setItem('baynana_code', code);
+    startQuiz();
   } else {
-    alert('يرجى إدخال بريد إلكتروني صحيح');
+    errorMsg.style.display = 'block';
   }
 }
+
+document.getElementById('quizCodeInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkQuizCode();
+});
+
+(function checkSavedCode() {
+  const saved = localStorage.getItem('baynana_code');
+  if (!saved) return;
+  if (saved.indexOf('QUIZ-') === 0 || saved.indexOf('FULL-') === 0) {
+    startQuiz();
+  } else {
+    document.getElementById('quizCodeInput').value = saved;
+  }
+})();
 
 function renderProgress() {
   const p = document.getElementById('progress');
