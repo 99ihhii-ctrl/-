@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import {
+  FOCUS_AREA_LABELS,
   GOAL_LABELS,
   LEVEL_LABELS,
   PLACE_LABELS,
@@ -41,10 +42,20 @@ function buildPrompt(profile: UserProfile) {
 - المستوى: ${LEVEL_LABELS[profile.level]}
 - مكان التمرين: ${PLACE_LABELS[profile.place]}
 - عدد أيام التمرين أسبوعياً: ${profile.daysPerWeek}
+- المنطقة اللي يبي يركز عليها أكثر: ${FOCUS_AREA_LABELS[profile.focusArea]}
 
 الأسبوع يبدأ بيوم السبت وينتهي بالخميس، بهذا الترتيب بالضبط: ${WEEK_DAYS_AR.join(
     "، "
   )}. وزّع أيام التمرين (${profile.daysPerWeek} أيام) وأيام الراحة على هذا الترتيب بشكل منطقي (لا يكون فيه يومين تمرين شاق متتاليين لنفس العضلة بدون راحة كافية).
+
+خصص وزناً أكبر من التمارين (بدون إهمال باقي الجسم) لمنطقة "${
+    FOCUS_AREA_LABELS[profile.focusArea]
+  }" لأنها أكثر شي يضايق المستخدم ويبي يركز عليه.
+${
+  profile.gender === "female"
+    ? 'المستخدمة أنثى: أعطِ تركيزاً إضافياً لتمارين الأرداف والمؤخرة والبطن (glutes, hips, core) ضمن البرنامج الأسبوعي، وفي خطة الوجبات راعِ احتياجات المرأة الغذائية (مصادر حديد وكالسيوم وبروتين كافية).'
+    : ""
+}
 
 مهم جداً بخصوص التمارين: لكل تمرين اكتب اسمه بالعربي (nameAr) واسمه الرسمي بالإنجليزي (nameEn) كما يظهر بالضبط في قاعدة بيانات ExerciseDB الشهيرة (مثال: "barbell bench press"، "push-up"، "squat")، لأن الاسم الإنجليزي سيُستخدم للبحث عن صورة GIF توضيحية عبر API خارجي، فيجب أن يكون الاسم بسيط ودقيق ومطابق لتسميات تمارين شائعة بالإنجليزية.
 

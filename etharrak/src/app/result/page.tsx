@@ -6,7 +6,9 @@ import Link from "next/link";
 import { calculateBmi } from "@/lib/bmi";
 import { GOAL_LABELS } from "@/lib/types";
 import type { GeneratedPlan, UserProfile } from "@/lib/types";
+import { initDashboardFromPlan } from "@/lib/dashboard";
 import ExerciseGif from "@/components/ExerciseGif";
+import MuscleMap from "@/components/MuscleMap";
 
 export default function ResultPage() {
   const router = useRouter();
@@ -21,8 +23,11 @@ export default function ResultPage() {
       router.replace("/form");
       return;
     }
-    setProfile(JSON.parse(rawProfile));
-    setPlan(JSON.parse(rawPlan));
+    const parsedProfile: UserProfile = JSON.parse(rawProfile);
+    const parsedPlan: GeneratedPlan = JSON.parse(rawPlan);
+    setProfile(parsedProfile);
+    setPlan(parsedPlan);
+    initDashboardFromPlan(parsedProfile, parsedPlan);
   }, [router]);
 
   if (!profile || !plan) {
@@ -131,7 +136,8 @@ export default function ResultPage() {
                         key={idx}
                         className="flex gap-4 rounded-xl border border-border bg-surface p-4"
                       >
-                        <ExerciseGif nameEn={ex.nameEn} />
+                        <ExerciseGif nameEn={ex.nameEn} displayName={ex.nameAr} />
+                        <MuscleMap targetMuscle={ex.targetMuscle} />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-baseline justify-between gap-2">
                             <h4 className="font-bold">{ex.nameAr}</h4>
@@ -217,11 +223,11 @@ export default function ResultPage() {
 
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
             <p className="font-semibold">
-              عجبك برنامجك؟ سجّل حساب مجاني عشان نتابعك يومياً ونذكّرك بتمارينك
-              ووجباتك.
+              عجبك برنامجك؟ افتح لوحة المتابعة اليومية عشان تسجل تقدمك وتقيّم
+              تماريننك يوماً بيوم.
             </p>
-            <Link href="/" className="btn-primary mt-4 inline-flex">
-              سجّل حسابك (قريباً)
+            <Link href="/dashboard" className="btn-primary mt-4 inline-flex">
+              افتح لوحة المتابعة
             </Link>
           </div>
         </section>

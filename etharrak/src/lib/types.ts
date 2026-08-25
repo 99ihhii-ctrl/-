@@ -3,6 +3,13 @@ export type Goal = "lose" | "gain" | "fitness";
 export type Level = "beginner" | "intermediate";
 export type Place = "home" | "gym";
 export type DaysPerWeek = 3 | 4 | 5;
+export type FocusArea =
+  | "belly"
+  | "arms"
+  | "chest"
+  | "glutes"
+  | "back"
+  | "full_body";
 
 export interface UserProfile {
   name: string;
@@ -14,6 +21,7 @@ export interface UserProfile {
   level: Level;
   place: Place;
   daysPerWeek: DaysPerWeek;
+  focusArea: FocusArea;
 }
 
 export interface Exercise {
@@ -82,3 +90,50 @@ export const PLACE_LABELS: Record<Place, string> = {
   home: "بيت",
   gym: "نادي",
 };
+
+export const FOCUS_AREA_LABELS: Record<FocusArea, string> = {
+  belly: "الكرش",
+  arms: "الذراعين",
+  chest: "الصدر",
+  glutes: "الأرداف",
+  back: "الظهر",
+  full_body: "الجسم كله",
+};
+
+// ---- Dashboard (localStorage-backed, no login yet) ----
+
+export type WorkoutDifficulty = "easy" | "ok" | "hard";
+
+export interface WeightLogEntry {
+  date: string; // YYYY-MM-DD
+  weight: number;
+}
+
+export interface MeasurementEntry {
+  date: string; // YYYY-MM-DD
+  waist?: number;
+  chest?: number;
+  hips?: number;
+}
+
+export interface DailyTip {
+  date: string; // YYYY-MM-DD, so we only fetch once per day
+  text: string;
+}
+
+export interface DifficultyState {
+  level: number; // -2..+2, applied to displayed sets
+  easyStreak: number;
+  hardStreak: number;
+}
+
+export interface DashboardState {
+  profile: UserProfile;
+  plan: GeneratedPlan;
+  startWeight: number;
+  weightLog: WeightLogEntry[];
+  measurements: MeasurementEntry[];
+  difficulty: DifficultyState;
+  dailyTip?: DailyTip;
+  createdAt: string;
+}

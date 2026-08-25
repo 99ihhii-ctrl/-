@@ -4,13 +4,16 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { calculateBmi } from "@/lib/bmi";
-import type {
-  DaysPerWeek,
-  Gender,
-  Goal,
-  Level,
-  Place,
-  UserProfile,
+import { estimateWeightProjection } from "@/lib/projection";
+import {
+  FOCUS_AREA_LABELS,
+  type DaysPerWeek,
+  type FocusArea,
+  type Gender,
+  type Goal,
+  type Level,
+  type Place,
+  type UserProfile,
 } from "@/lib/types";
 
 const goalOptions: { value: Goal; label: string }[] = [
@@ -18,6 +21,10 @@ const goalOptions: { value: Goal; label: string }[] = [
   { value: "gain", label: "تضخيم" },
   { value: "fitness", label: "لياقة عامة" },
 ];
+
+const focusAreaOptions: { value: FocusArea; label: string }[] = (
+  ["belly", "arms", "chest", "glutes", "back", "full_body"] as FocusArea[]
+).map((value) => ({ value, label: FOCUS_AREA_LABELS[value] }));
 
 const levelOptions: { value: Level; label: string }[] = [
   { value: "beginner", label: "مبتدئ" },
@@ -43,12 +50,19 @@ export default function FormPage() {
   const [level, setLevel] = useState<Level>("beginner");
   const [place, setPlace] = useState<Place>("home");
   const [daysPerWeek, setDaysPerWeek] = useState<DaysPerWeek>(3);
+  const [focusArea, setFocusArea] = useState<FocusArea>("full_body");
   const [error, setError] = useState("");
 
   const bmi = useMemo(
     () => calculateBmi(parseFloat(weight), parseFloat(height)),
     [weight, height]
   );
+
+  const projection = useMemo(() => {
+    const weightNum = parseFloat(weight);
+    if (!weightNum || weightNum <= 0) return null;
+    return estimateWeightProjection(weightNum, goal, daysPerWeek);
+  }, [weight, goal, daysPerWeek]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +90,7 @@ export default function FormPage() {
       level,
       place,
       daysPerWeek,
+      focusArea,
     };
 
     sessionStorage.setItem("etharrak_profile", JSON.stringify(profile));
@@ -196,6 +211,32 @@ export default function FormPage() {
             </div>
           )}
 
+          {projection && (
+            <div className="glass-card rounded-2xl p-5">
+              <p className="mb-3 text-sm font-semibold text-gray-400">
+                توقع تقريبي بناءً على هدفك والتزامك
+              </p>
+              <div className="grid grid-cols-2 gap-3 text-center">
+                <div className="rounded-xl border border-border bg-surface2 p-4">
+                  <p className="text-xs text-gray-400">بعد شهر</p>
+                  <p className="text-xl font-extrabold text-primary">
+                    {projection.in1Month} كجم
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-surface2 p-4">
+                  <p className="text-xs text-gray-400">بعد 3 أشهر</p>
+                  <p className="text-xl font-extrabold text-primary">
+                    {projection.in3Months} كجم
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-gray-500">
+                تقدير تحفيزي تقريبي مبني على معدل تغير آمن، وليس استشارة طبية
+                — النتيجة الفعلية تعتمد على التزامك والتغذية.
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="mb-2 block text-sm font-semibold">الهدف</label>
             <div className="grid grid-cols-3 gap-2">
@@ -206,6 +247,28 @@ export default function FormPage() {
                   onClick={() => setGoal(o.value)}
                   className={`rounded-xl border px-3 py-3 text-sm font-semibold transition-colors ${
                     goal === o.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-surface text-gray-400 hover:border-gray-600"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold">
+              وش أكثر شيء يضايقك وتبي تركز عليه؟
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {focusAreaOptions.map((o) => (
+                <button
+                  type="button"
+                  key={o.value}
+                  onClick={() => setFocusArea(o.value)}
+                  className={`rounded-xl border px-3 py-3 text-sm font-semibold transition-colors ${
+                    focusArea === o.value
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-surface text-gray-400 hover:border-gray-600"
                   }`}

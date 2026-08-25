@@ -46,6 +46,55 @@ body {
   border-radius: 999px;
 }
 
+/* Muscle-map figure: simple limb motions so the silhouette reads as
+   "doing the exercise" rather than a static pointer diagram. */
+@keyframes swing-arms {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-30deg); }
+}
+@keyframes bend-legs {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.82); }
+}
+@keyframes bend-torso {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes pulse-hips {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.anim-swing-arms {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: swing-arms 1.1s ease-in-out infinite;
+}
+.anim-bend-legs {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: bend-legs 1.1s ease-in-out infinite;
+}
+.anim-bend-torso {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: bend-torso 1.1s ease-in-out infinite;
+}
+.anim-pulse-hips {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: pulse-hips 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-swing-arms,
+  .anim-bend-legs,
+  .anim-bend-torso,
+  .anim-pulse-hips {
+    animation: none;
+  }
+}
+
 @media print {
   body {
     background: #ffffff !important;
