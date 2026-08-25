@@ -384,6 +384,9 @@ export default function DashboardPage() {
                             <p className="text-sm text-primary">
                               {adjusted.sets} سيتات &times; {ex.reps}
                             </p>
+                            <p className="mt-1 text-xs text-accent">
+                              {ex.commonMistake}
+                            </p>
                           </div>
                         </div>
                       </div>

@@ -30,7 +30,8 @@ export interface Exercise {
   targetMuscle: string;
   sets: number;
   reps: string;
-  notes: string;
+  stepsAr: string[]; // 3 steps, how to perform it
+  commonMistake: string; // common beginner mistake to avoid
 }
 
 export interface DayPlan {

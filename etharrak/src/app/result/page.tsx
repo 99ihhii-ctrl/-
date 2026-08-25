@@ -11,11 +11,14 @@ import ExerciseGif from "@/components/ExerciseGif";
 import MuscleMap from "@/components/MuscleMap";
 import MealDayCard from "@/components/MealDayCard";
 
+type ResultTab = "workouts" | "meals";
+
 export default function ResultPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<GeneratedPlan | null>(null);
   const [shareMsg, setShareMsg] = useState("");
+  const [activeTab, setActiveTab] = useState<ResultTab>("workouts");
 
   useEffect(() => {
     const rawProfile = sessionStorage.getItem("etharrak_profile");
@@ -96,8 +99,35 @@ export default function ResultPage() {
           </div>
         </section>
 
-        {/* Section 2: Weekly Plan */}
-        <section>
+        {/* Tabs: switch between workouts and meals */}
+        <div className="flex gap-2 rounded-xl border border-border bg-surface p-1 print:hidden">
+          <button
+            type="button"
+            onClick={() => setActiveTab("workouts")}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-colors ${
+              activeTab === "workouts"
+                ? "bg-primary text-navy"
+                : "text-gray-400 hover:text-foreground"
+            }`}
+          >
+            التمارين
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("meals")}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-colors ${
+              activeTab === "meals"
+                ? "bg-primary text-navy"
+                : "text-gray-400 hover:text-foreground"
+            }`}
+          >
+            الوجبات
+          </button>
+        </div>
+
+        {/* Section 2: Weekly Plan — hidden (not unmounted) when the meals
+            tab is active, so window.print() still exports both sections. */}
+        <section className={activeTab === "workouts" ? "block" : "hidden print:block"}>
           <h2 className="mb-5 text-2xl font-extrabold">
             برنامجك الأسبوعي
           </h2>
@@ -147,10 +177,31 @@ export default function ResultPage() {
                             <p className="mt-1 text-sm font-semibold text-primary">
                               {ex.sets} سيتات &times; {ex.reps} تكرار
                             </p>
-                            <p className="mt-2 text-sm leading-relaxed text-gray-400">
-                              {ex.notes}
-                            </p>
                           </div>
+                        </div>
+
+                        <ol className="mt-3 space-y-1.5 border-t border-border pt-3">
+                          {ex.stepsAr.map((step, i) => (
+                            <li key={i} className="flex gap-2 text-sm text-gray-400">
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                                {i + 1}
+                              </span>
+                              {step}
+                            </li>
+                          ))}
+                        </ol>
+
+                        <div className="mt-3 flex gap-2 rounded-lg border border-accent/20 bg-accent/5 p-3 text-sm text-accent">
+                          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 shrink-0">
+                            <path
+                              d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <span>{ex.commonMistake}</span>
                         </div>
                       </div>
                     ))}
@@ -162,7 +213,7 @@ export default function ResultPage() {
         </section>
 
         {/* Section 3: Meal Plan */}
-        <section>
+        <section className={activeTab === "meals" ? "block" : "hidden print:block"}>
           <h2 className="mb-2 text-2xl font-extrabold">خطة الوجبات</h2>
           <p className="mb-5 text-sm text-gray-400">
             وجبات مختلفة كل يوم، مع 3 خيارات بديلة لكل وجبة تختار منها.

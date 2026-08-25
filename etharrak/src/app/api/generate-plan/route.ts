@@ -26,17 +26,49 @@ const MAX_OUTPUT_TOKENS = 16_000;
 
 const MODEL = "claude-sonnet-4-6";
 
+// Curated list of common ExerciseDB-style exercise names. Constraining
+// nameEn to this exact enum (rather than letting the model freely invent a
+// name) is what actually guarantees the GIF lookup finds a match — a
+// freely-generated name, even a "simple, common-sounding" one, routinely
+// doesn't match ExerciseDB's exact vocabulary.
+const EXERCISE_NAME_EN_OPTIONS = [
+  "push-up", "bench press", "incline bench press", "decline bench press",
+  "dumbbell fly", "chest dip",
+  "pull-up", "chin-up", "lat pulldown", "seated row", "dumbbell row",
+  "deadlift", "back extension", "superman",
+  "shoulder press", "overhead press", "lateral raise", "front raise",
+  "face pull", "arnold press",
+  "bicep curl", "hammer curl", "concentration curl", "preacher curl",
+  "triceps dip", "tricep pushdown", "skull crusher", "close-grip bench press",
+  "wrist curl", "farmer's walk",
+  "squat", "lunge", "leg press", "leg extension", "bulgarian split squat",
+  "step up", "goblet squat", "box jump", "wall sit",
+  "leg curl", "hip thrust", "glute bridge", "romanian deadlift",
+  "good morning", "calf raise",
+  "plank", "side plank", "sit-up", "crunch", "bicycle crunch",
+  "russian twist", "leg raise", "flutter kicks", "mountain climber",
+  "bird dog", "hollow hold",
+  "burpee", "jumping jack", "jump rope", "high knees", "butt kicks",
+  "kettlebell swing",
+] as const;
+
 const ExerciseSchema = z.object({
   nameAr: z.string().describe("اسم التمرين بالعربي"),
   nameEn: z
-    .string()
+    .enum(EXERCISE_NAME_EN_OPTIONS)
     .describe(
-      "الاسم الرسمي للتمرين بالإنجليزي كما يظهر بالضبط في قاعدة بيانات ExerciseDB (مثال: 'barbell bench press', 'push-up', 'squat') — بسيط ودقيق، 1-4 كلمات، مطابق لتسميات تمارين شائعة"
+      "اختر الاسم الإنجليزي فقط من هذه القائمة المحددة مسبقاً — يُستخدم للبحث المباشر في ExerciseDB"
     ),
   targetMuscle: z.string().describe("العضلة المستهدفة بالعربي"),
   sets: z.number().int().min(1).max(6),
   reps: z.string().describe("مثال: 12-15"),
-  notes: z.string().describe("شرح مختصر لطريقة الأداء أو نصيحة، لا يتجاوز 15 كلمة"),
+  stepsAr: z
+    .array(z.string())
+    .length(3)
+    .describe("شرح طريقة أداء التمرين خطوة بخطوة بالعربي، 3 خطوات مختصرة"),
+  commonMistake: z
+    .string()
+    .describe("خطأ شائع يقع فيه المبتدئ بهذا التمرين وكيف يتجنبه، جملة واحدة مختصرة"),
 });
 
 const DayPlanSchema = z.object({
@@ -111,6 +143,10 @@ function buildPrompt(profile: UserProfile) {
 الأسبوع يبدأ بيوم السبت وينتهي بالخميس، بهذا الترتيب بالضبط: ${WEEK_DAYS_AR.join(
     "، "
   )}. وزّع أيام التمرين (${profile.daysPerWeek} أيام) وأيام الراحة على هذا الترتيب بشكل منطقي (لا يكون فيه يومين تمرين شاق متتاليين لنفس العضلة بدون راحة كافية).
+
+أسماء التمارين الإنجليزية محدودة بقائمة ثابتة مسبقاً — اختر التمارين المناسبة لمكان التمرين (${
+    PLACE_LABELS[profile.place]
+  }) والمستوى من ضمن هذه القائمة.
 
 خصص وزناً أكبر من التمارين (بدون إهمال باقي الجسم) لمنطقة "${
     FOCUS_AREA_LABELS[profile.focusArea]
