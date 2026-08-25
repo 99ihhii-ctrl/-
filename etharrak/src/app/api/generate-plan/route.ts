@@ -11,7 +11,17 @@ import {
 import { calculateBmi } from "@/lib/bmi";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// Generating a full weekly workout + meal plan routinely takes Claude
+// 45-100s and can need well over 4096 output tokens (a 5-day plan +
+// 4 detailed meals was observed hitting stop_reason "max_tokens" and
+// returning truncated, unparsable JSON). Keep maxDuration comfortably
+// above the observed latency, and keep ANTHROPIC_TIMEOUT_MS below it so
+// our own try/catch returns a clean JSON error instead of the platform
+// hard-killing the function (which produces a non-JSON response the
+// client can't parse).
+export const maxDuration = 180;
+const ANTHROPIC_TIMEOUT_MS = 150_000;
+const MAX_OUTPUT_TOKENS = 8192;
 
 const MODEL = "claude-sonnet-4-6";
 
@@ -53,7 +63,7 @@ function buildPrompt(profile: UserProfile) {
           "targetMuscle": "العضلة المستهدفة",
           "sets": 3,
           "reps": "12-15",
-          "notes": "شرح مختصر لطريقة الأداء أو نصيحة"
+          "notes": "شرح مختصر لطريقة الأداء أو نصيحة (لا يتجاوز 15 كلمة)"
         }
       ]
     }
@@ -71,7 +81,7 @@ function buildPrompt(profile: UserProfile) {
   }
 }
 
-لأيام الراحة اجعل مصفوفة exercises فارغة []. اجعل خطط الوجبات مناسبة لهدف المستخدم (${GOAL_LABELS[profile.goal]}) ووزنه وسعراته التقريبية اليومية. أرجع JSON صالح فقط بدون markdown code fences.`;
+لأيام الراحة اجعل مصفوفة exercises فارغة []. اجعل خطط الوجبات مناسبة لهدف المستخدم (${GOAL_LABELS[profile.goal]}) ووزنه وسعراته التقريبية اليومية. كن مختصراً ومباشراً في كل حقل نصي (notes، items) لتوفير المساحة — التفاصيل الأساسية فقط. أرجع JSON صالح وكامل فقط (مقفول بشكل صحيح) بدون markdown code fences.`;
 }
 
 function extractJson(text: string): string {
@@ -103,11 +113,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const anthropic = new Anthropic({ apiKey });
+    // maxRetries: 0 — the SDK retries timeouts by default, which could push
+    // the total wait past Vercel's maxDuration and get the function killed
+    // before we can return a clean JSON error.
+    const anthropic = new Anthropic({
+      apiKey,
+      timeout: ANTHROPIC_TIMEOUT_MS,
+      maxRetries: 0,
+    });
 
     const message = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: MAX_OUTPUT_TOKENS,
       messages: [{ role: "user", content: buildPrompt(profile) }],
     });
 
@@ -119,11 +136,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (message.stop_reason === "max_tokens") {
+      console.error(
+        "generate-plan truncated: hit max_tokens",
+        MAX_OUTPUT_TOKENS
+      );
+      return NextResponse.json(
+        {
+          error:
+            "البرنامج طويل جداً على المساحة المتاحة، جرب تقليل عدد أيام التمرين أو حاول مرة أخرى",
+        },
+        { status: 502 }
+      );
+    }
+
     const jsonStr = extractJson(textBlock.text);
     let plan: GeneratedPlan;
     try {
       plan = JSON.parse(jsonStr);
     } catch {
+      console.error("generate-plan JSON.parse failed, raw text:", textBlock.text);
       return NextResponse.json(
         { error: "تعذر تحليل رد الذكاء الاصطناعي" },
         { status: 502 }
@@ -133,6 +165,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(plan);
   } catch (err) {
     console.error("generate-plan error", err);
+
+    if (err instanceof Anthropic.APIConnectionTimeoutError) {
+      return NextResponse.json(
+        { error: "توليد البرنامج استغرق وقتاً أطول من المتوقع، حاول مرة أخرى" },
+        { status: 504 }
+      );
+    }
+
+    if (err instanceof Anthropic.AuthenticationError) {
+      return NextResponse.json(
+        { error: "مفتاح ANTHROPIC_API_KEY غير صالح، تأكد منه في إعدادات الخادم" },
+        { status: 500 }
+      );
+    }
+
+    if (err instanceof Anthropic.RateLimitError) {
+      return NextResponse.json(
+        { error: "تم تجاوز الحد المسموح من الطلبات، حاول بعد قليل" },
+        { status: 429 }
+      );
+    }
+
+    if (err instanceof Anthropic.APIError) {
+      return NextResponse.json(
+        { error: `خطأ من خدمة الذكاء الاصطناعي: ${err.message}` },
+        { status: 502 }
+      );
+    }
+
     return NextResponse.json(
       { error: "حدث خطأ أثناء توليد البرنامج، حاول مرة أخرى" },
       { status: 500 }
