@@ -9,6 +9,7 @@ import type { GeneratedPlan, UserProfile } from "@/lib/types";
 import { initDashboardFromPlan } from "@/lib/dashboard";
 import ExerciseGif from "@/components/ExerciseGif";
 import MuscleMap from "@/components/MuscleMap";
+import MealDayCard from "@/components/MealDayCard";
 
 export default function ResultPage() {
   const router = useRouter();
@@ -62,13 +63,6 @@ export default function ResultPage() {
   function handleSavePdf() {
     window.print();
   }
-
-  const mealEntries = [
-    plan.mealPlan.breakfast,
-    plan.mealPlan.lunch,
-    plan.mealPlan.dinner,
-    plan.mealPlan.snack,
-  ];
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 sm:px-6">
@@ -134,23 +128,29 @@ export default function ResultPage() {
                     {day.exercises.map((ex, idx) => (
                       <div
                         key={idx}
-                        className="flex gap-4 rounded-xl border border-border bg-surface p-4"
+                        className="rounded-xl border border-border bg-surface p-4"
                       >
-                        <ExerciseGif nameEn={ex.nameEn} displayName={ex.nameAr} />
-                        <MuscleMap targetMuscle={ex.targetMuscle} />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-baseline justify-between gap-2">
-                            <h4 className="font-bold">{ex.nameAr}</h4>
-                            <span className="text-sm text-gray-400">
-                              {ex.targetMuscle}
-                            </span>
+                        <ExerciseGif
+                          nameEn={ex.nameEn}
+                          targetMuscle={ex.targetMuscle}
+                          displayName={ex.nameAr}
+                        />
+                        <div className="mt-3 flex gap-3">
+                          <MuscleMap targetMuscle={ex.targetMuscle} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                              <h4 className="font-bold">{ex.nameAr}</h4>
+                              <span className="text-sm text-gray-400">
+                                {ex.targetMuscle}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-sm font-semibold text-primary">
+                              {ex.sets} سيتات &times; {ex.reps} تكرار
+                            </p>
+                            <p className="mt-2 text-sm leading-relaxed text-gray-400">
+                              {ex.notes}
+                            </p>
                           </div>
-                          <p className="mt-1 text-sm font-semibold text-primary">
-                            {ex.sets} سيتات &times; {ex.reps} تكرار
-                          </p>
-                          <p className="mt-2 text-sm leading-relaxed text-gray-400">
-                            {ex.notes}
-                          </p>
                         </div>
                       </div>
                     ))}
@@ -163,30 +163,17 @@ export default function ResultPage() {
 
         {/* Section 3: Meal Plan */}
         <section>
-          <h2 className="mb-5 text-2xl font-extrabold">خطة الوجبات</h2>
-          <div className="grid gap-5 sm:grid-cols-2">
-            {mealEntries.map((meal) => (
-              <div key={meal.name} className="glass-card rounded-2xl p-6">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-lg font-bold">{meal.name}</h3>
-                  <span className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                    {meal.calories} سعرة
-                  </span>
-                </div>
-                <p className="text-sm leading-relaxed text-gray-300">
-                  {meal.items}
-                </p>
-                <ol className="mt-4 space-y-2">
-                  {meal.steps.map((step, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-gray-400">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                        {i + 1}
-                      </span>
-                      {step}
-                    </li>
-                  ))}
-                </ol>
-              </div>
+          <h2 className="mb-2 text-2xl font-extrabold">خطة الوجبات</h2>
+          <p className="mb-5 text-sm text-gray-400">
+            وجبات مختلفة كل يوم، مع 3 خيارات بديلة لكل وجبة تختار منها.
+          </p>
+          <div className="space-y-4">
+            {plan.mealPlan.map((dayMeals, i) => (
+              <MealDayCard
+                key={dayMeals.day}
+                dayMeals={dayMeals}
+                defaultOpen={i === 0}
+              />
             ))}
           </div>
         </section>

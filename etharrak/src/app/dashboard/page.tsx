@@ -371,17 +371,20 @@ export default function DashboardPage() {
                       difficulty.level
                     );
                     return (
-                      <div
-                        key={idx}
-                        className="flex gap-3 rounded-lg bg-surface p-3"
-                      >
-                        <ExerciseGif nameEn={ex.nameEn} displayName={ex.nameAr} />
-                        <MuscleMap targetMuscle={ex.targetMuscle} />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold">{ex.nameAr}</p>
-                          <p className="text-sm text-primary">
-                            {adjusted.sets} سيتات &times; {ex.reps}
-                          </p>
+                      <div key={idx} className="rounded-lg bg-surface p-3">
+                        <ExerciseGif
+                          nameEn={ex.nameEn}
+                          targetMuscle={ex.targetMuscle}
+                          displayName={ex.nameAr}
+                        />
+                        <div className="mt-3 flex gap-3">
+                          <MuscleMap targetMuscle={ex.targetMuscle} />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold">{ex.nameAr}</p>
+                            <p className="text-sm text-primary">
+                              {adjusted.sets} سيتات &times; {ex.reps}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     );

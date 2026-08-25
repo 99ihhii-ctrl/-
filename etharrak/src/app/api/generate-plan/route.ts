@@ -1,35 +1,99 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { z } from "zod";
 import {
   FOCUS_AREA_LABELS,
   GOAL_LABELS,
   LEVEL_LABELS,
   PLACE_LABELS,
   WEEK_DAYS_AR,
-  type GeneratedPlan,
   type UserProfile,
 } from "@/lib/types";
 import { calculateBmi } from "@/lib/bmi";
 
 export const runtime = "nodejs";
-// Generating a full weekly workout + meal plan routinely takes Claude
-// 45-100s and can need well over 4096 output tokens (a 5-day plan +
-// 4 detailed meals was observed hitting stop_reason "max_tokens" and
-// returning truncated, unparsable JSON). Keep maxDuration comfortably
-// above the observed latency, and keep ANTHROPIC_TIMEOUT_MS below it so
-// our own try/catch returns a clean JSON error instead of the platform
-// hard-killing the function (which produces a non-JSON response the
-// client can't parse).
-export const maxDuration = 180;
-const ANTHROPIC_TIMEOUT_MS = 150_000;
-const MAX_OUTPUT_TOKENS = 8192;
+// A full week of exercises plus 6 days x 4 meals x 3 alternative options is
+// a lot of structured content. claude-sonnet-4-6 supports up to 128K output
+// tokens; 16000 is comfortably inside the range the Anthropic SDK considers
+// safe for a single non-streaming call. maxDuration/ANTHROPIC_TIMEOUT_MS are
+// sized with real headroom above the latency that budget can take, and
+// ANTHROPIC_TIMEOUT_MS stays below maxDuration so our own try/catch returns
+// a clean JSON error instead of the platform hard-killing the function.
+export const maxDuration = 280;
+const ANTHROPIC_TIMEOUT_MS = 260_000;
+const MAX_OUTPUT_TOKENS = 16_000;
 
 const MODEL = "claude-sonnet-4-6";
+
+const ExerciseSchema = z.object({
+  nameAr: z.string().describe("اسم التمرين بالعربي"),
+  nameEn: z
+    .string()
+    .describe(
+      "الاسم الرسمي للتمرين بالإنجليزي كما يظهر بالضبط في قاعدة بيانات ExerciseDB (مثال: 'barbell bench press', 'push-up', 'squat') — بسيط ودقيق، 1-4 كلمات، مطابق لتسميات تمارين شائعة"
+    ),
+  targetMuscle: z.string().describe("العضلة المستهدفة بالعربي"),
+  sets: z.number().int().min(1).max(6),
+  reps: z.string().describe("مثال: 12-15"),
+  notes: z.string().describe("شرح مختصر لطريقة الأداء أو نصيحة، لا يتجاوز 15 كلمة"),
+});
+
+const DayPlanSchema = z.object({
+  day: z.string().describe("اسم اليوم بالعربي"),
+  isRestDay: z.boolean(),
+  focus: z
+    .string()
+    .describe("العضلة أو التركيز الرئيسي لليوم، نص فارغ إذا كان يوم راحة"),
+  exercises: z
+    .array(ExerciseSchema)
+    .describe("فارغة [] إذا كان يوم راحة"),
+});
+
+const MealOptionSchema = z.object({
+  name: z.string().describe("اسم الوجبة، مثال: كبسة دجاج"),
+  items: z
+    .string()
+    .describe(
+      "المقادير بالجرام، من المطبخ السعودي/العربي (أرز، دجاج، تمر، لبن، عدس، خضار...)، مختصرة"
+    ),
+  steps: z.array(z.string()).length(3).describe("3 خطوات تحضير مختصرة"),
+  calories: z.number().int().describe("السعرات التقريبية لهذا الخيار"),
+});
+
+const DayMealsSchema = z.object({
+  day: z.string().describe("اسم اليوم بالعربي"),
+  breakfast: z
+    .array(MealOptionSchema)
+    .length(3)
+    .describe("3 خيارات فطور مختلفة يختار المستخدم بينها"),
+  lunch: z.array(MealOptionSchema).length(3).describe("3 خيارات غداء"),
+  dinner: z.array(MealOptionSchema).length(3).describe("3 خيارات عشاء"),
+  snack: z.array(MealOptionSchema).length(3).describe("3 خيارات سناك"),
+});
+
+const GeneratedPlanSchema = z.object({
+  personalMessage: z
+    .string()
+    .describe(
+      "جملة تشجيعية شخصية قصيرة موجهة للمستخدم باسمه، بناءً على هدفه ومستواه"
+    ),
+  weeklyPlan: z
+    .array(DayPlanSchema)
+    .length(6)
+    .describe("6 أيام بالترتيب: السبت، الأحد، الاثنين، الثلاثاء، الأربعاء، الخميس"),
+  mealPlan: z
+    .array(DayMealsSchema)
+    .length(6)
+    .describe(
+      "6 أيام بنفس ترتيب weeklyPlan، بوجبات مختلفة كل يوم (لا تكرر نفس الوجبات بين الأيام)"
+    ),
+});
 
 function buildPrompt(profile: UserProfile) {
   const bmi = calculateBmi(profile.weight, profile.height);
 
-  return `أنت مدرب لياقة بدنية وأخصائي تغذية محترف. اصنع برنامج تمارين ووجبات أسبوعي مخصص للمستخدم التالي، وأرجع الرد بصيغة JSON فقط بدون أي نص إضافي قبله أو بعده.
+  return `أنت مدرب لياقة بدنية وأخصائي تغذية سعودي محترف. اصنع برنامج تمارين ووجبات أسبوعي مخصص للمستخدم التالي.
 
 بيانات المستخدم:
 - الاسم: ${profile.name}
@@ -57,52 +121,11 @@ ${
     : ""
 }
 
-مهم جداً بخصوص التمارين: لكل تمرين اكتب اسمه بالعربي (nameAr) واسمه الرسمي بالإنجليزي (nameEn) كما يظهر بالضبط في قاعدة بيانات ExerciseDB الشهيرة (مثال: "barbell bench press"، "push-up"، "squat")، لأن الاسم الإنجليزي سيُستخدم للبحث عن صورة GIF توضيحية عبر API خارجي، فيجب أن يكون الاسم بسيط ودقيق ومطابق لتسميات تمارين شائعة بالإنجليزية.
+خطة الوجبات: كل يوم من الأيام الستة له وجبات مختلفة عن باقي الأيام (تنوع حقيقي، بدون تكرار نفس الأطباق)، من المطبخ السعودي/العربي المألوف (أرز، دجاج، تمر، لبن، عدس، خضار، سمك، لحم...). كل وجبة (فطور/غداء/عشاء/سناك) تجي مع 3 خيارات بديلة مختلفة يختار المستخدم من بينها. اجعل السعرات موزونة حسب هدف المستخدم (${
+    GOAL_LABELS[profile.goal]
+  }) ووزنه.
 
-أرجع JSON بالضبط بهذا الشكل (schema):
-{
-  "personalMessage": "جملة تشجيعية شخصية قصيرة موجهة للمستخدم باسمه، بناءً على هدفه ومستواه",
-  "weeklyPlan": [
-    {
-      "day": "اسم اليوم بالعربي",
-      "isRestDay": false,
-      "focus": "العضلة أو التركيز الرئيسي لليوم (فارغ إذا كان يوم راحة)",
-      "exercises": [
-        {
-          "nameAr": "اسم التمرين بالعربي",
-          "nameEn": "English exercise name matching ExerciseDB naming",
-          "targetMuscle": "العضلة المستهدفة",
-          "sets": 3,
-          "reps": "12-15",
-          "notes": "شرح مختصر لطريقة الأداء أو نصيحة (لا يتجاوز 15 كلمة)"
-        }
-      ]
-    }
-  ],
-  "mealPlan": {
-    "breakfast": {
-      "name": "فطور",
-      "items": "المقادير بالجرام، كل مقدار بالجرام واضح",
-      "steps": ["خطوة 1", "خطوة 2", "خطوة 3"],
-      "calories": 400
-    },
-    "lunch": { "name": "غداء", "items": "...", "steps": ["...", "...", "..."], "calories": 600 },
-    "dinner": { "name": "عشاء", "items": "...", "steps": ["...", "...", "..."], "calories": 450 },
-    "snack": { "name": "سناك", "items": "...", "steps": ["...", "...", "..."], "calories": 150 }
-  }
-}
-
-لأيام الراحة اجعل مصفوفة exercises فارغة []. اجعل خطط الوجبات مناسبة لهدف المستخدم (${GOAL_LABELS[profile.goal]}) ووزنه وسعراته التقريبية اليومية. كن مختصراً ومباشراً في كل حقل نصي (notes، items) لتوفير المساحة — التفاصيل الأساسية فقط. أرجع JSON صالح وكامل فقط (مقفول بشكل صحيح) بدون markdown code fences.`;
-}
-
-function extractJson(text: string): string {
-  const trimmed = text.trim();
-  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fenceMatch) return fenceMatch[1].trim();
-  const start = trimmed.indexOf("{");
-  const end = trimmed.lastIndexOf("}");
-  if (start !== -1 && end !== -1) return trimmed.slice(start, end + 1);
-  return trimmed;
+كن مختصراً ومباشراً في كل حقل نصي لتوفير المساحة.`;
 }
 
 export async function POST(req: NextRequest) {
@@ -133,19 +156,14 @@ export async function POST(req: NextRequest) {
       maxRetries: 0,
     });
 
-    const message = await anthropic.messages.create({
+    const message = await anthropic.messages.parse({
       model: MODEL,
       max_tokens: MAX_OUTPUT_TOKENS,
       messages: [{ role: "user", content: buildPrompt(profile) }],
+      output_config: {
+        format: zodOutputFormat(GeneratedPlanSchema),
+      },
     });
-
-    const textBlock = message.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      return NextResponse.json(
-        { error: "رد غير متوقع من الذكاء الاصطناعي" },
-        { status: 502 }
-      );
-    }
 
     if (message.stop_reason === "max_tokens") {
       console.error(
@@ -161,19 +179,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const jsonStr = extractJson(textBlock.text);
-    let plan: GeneratedPlan;
-    try {
-      plan = JSON.parse(jsonStr);
-    } catch {
-      console.error("generate-plan JSON.parse failed, raw text:", textBlock.text);
+    if (!message.parsed_output) {
+      console.error("generate-plan: parsed_output was null");
       return NextResponse.json(
         { error: "تعذر تحليل رد الذكاء الاصطناعي" },
         { status: 502 }
       );
     }
 
-    return NextResponse.json(plan);
+    return NextResponse.json(message.parsed_output);
   } catch (err) {
     console.error("generate-plan error", err);
 

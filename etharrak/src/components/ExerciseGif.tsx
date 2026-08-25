@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 
 export default function ExerciseGif({
   nameEn,
+  targetMuscle,
   displayName,
 }: {
   nameEn: string;
+  targetMuscle?: string;
   displayName?: string;
 }) {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
@@ -20,7 +22,10 @@ export default function ExerciseGif({
     setStatus("loading");
     setGifUrl(null);
 
-    fetch(`/api/exercise?name=${encodeURIComponent(nameEn)}`)
+    const params = new URLSearchParams({ name: nameEn });
+    if (targetMuscle) params.set("targetMuscle", targetMuscle);
+
+    fetch(`/api/exercise?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (cancelled) return;
@@ -38,7 +43,7 @@ export default function ExerciseGif({
     return () => {
       cancelled = true;
     };
-  }, [nameEn]);
+  }, [nameEn, targetMuscle]);
 
   useEffect(() => {
     if (!zoomed) return;
@@ -55,7 +60,7 @@ export default function ExerciseGif({
         <button
           type="button"
           onClick={() => setZoomed(true)}
-          className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-border bg-surface2"
+          className="group relative h-56 w-full shrink-0 overflow-hidden rounded-xl border border-border bg-surface2 sm:h-64"
           aria-label="تكبير صورة التمرين"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -65,8 +70,8 @@ export default function ExerciseGif({
             className="h-full w-full object-cover"
             loading="lazy"
           />
-          <span className="absolute bottom-1 left-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-90 transition-opacity group-hover:opacity-100">
-            <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+          <span className="absolute bottom-2 left-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white opacity-90 transition-opacity group-hover:opacity-100">
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
               <path
                 d="M10 4v12M4 10h12"
                 stroke="currentColor"
@@ -84,7 +89,7 @@ export default function ExerciseGif({
             onClick={() => setZoomed(false)}
           >
             <div
-              className="max-w-sm rounded-2xl border border-border bg-surface p-4"
+              className="max-w-lg rounded-2xl border border-border bg-surface p-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-3 flex items-center justify-between">
@@ -109,7 +114,7 @@ export default function ExerciseGif({
               <img
                 src={gifUrl}
                 alt={displayName || nameEn}
-                className="max-h-[70vh] w-full rounded-xl object-contain"
+                className="max-h-[75vh] w-full rounded-xl object-contain"
               />
             </div>
           </div>
@@ -119,12 +124,12 @@ export default function ExerciseGif({
   }
 
   return (
-    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-border bg-surface2 text-gray-600">
+    <div className="flex h-56 w-full shrink-0 items-center justify-center rounded-xl border border-border bg-surface2 text-gray-600 sm:h-64">
       {status === "loading" ? (
         <svg
           viewBox="0 0 24 24"
           fill="none"
-          className="h-6 w-6 animate-spin text-gray-500"
+          className="h-8 w-8 animate-spin text-gray-500"
         >
           <circle
             cx="12"
@@ -137,7 +142,7 @@ export default function ExerciseGif({
           />
         </svg>
       ) : (
-        <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8">
+        <svg viewBox="0 0 24 24" fill="none" className="h-12 w-12">
           <path
             d="M6.5 6.5v11M17.5 6.5v11M3 9h3M3 15h3M18 9h3M18 15h3M6.5 12h11"
             stroke="currentColor"

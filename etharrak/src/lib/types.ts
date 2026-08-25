@@ -40,24 +40,34 @@ export interface DayPlan {
   exercises: Exercise[];
 }
 
-export interface Meal {
-  name: string; // فطور / غداء / عشاء / سناك
+export interface MealOption {
+  name: string; // e.g. أرز بخاري بالدجاج
   items: string; // ingredients with grams
   steps: string[]; // 3 steps
   calories: number;
 }
 
-export interface MealPlan {
-  breakfast: Meal;
-  lunch: Meal;
-  dinner: Meal;
-  snack: Meal;
+export interface DayMeals {
+  day: string; // e.g. السبت
+  breakfast: MealOption[]; // 3 alternative options
+  lunch: MealOption[];
+  dinner: MealOption[];
+  snack: MealOption[];
 }
+
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+
+export const MEAL_TYPE_LABELS: Record<MealType, string> = {
+  breakfast: "فطور",
+  lunch: "غداء",
+  dinner: "عشاء",
+  snack: "سناك",
+};
 
 export interface GeneratedPlan {
   personalMessage: string;
   weeklyPlan: DayPlan[];
-  mealPlan: MealPlan;
+  mealPlan: DayMeals[]; // one entry per day, matching WEEK_DAYS_AR
 }
 
 export interface BmiResult {
