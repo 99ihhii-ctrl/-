@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import {
   GOAL_LABELS,
   LEVEL_LABELS,
@@ -13,7 +12,8 @@ import { calculateBmi } from "@/lib/bmi";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MODEL = "claude-sonnet-4-6";
+const GEMINI_ENDPOINT =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 function buildPrompt(profile: UserProfile) {
   const bmi = calculateBmi(profile.weight, profile.height);
@@ -95,31 +95,48 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY غير مهيأ في الخادم" },
+        { error: "GEMINI_API_KEY غير مهيأ في الخادم" },
         { status: 500 }
       );
     }
 
-    const anthropic = new Anthropic({ apiKey });
-
-    const message = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 4096,
-      messages: [{ role: "user", content: buildPrompt(profile) }],
+    const geminiRes = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: buildPrompt(profile) }] }],
+        generationConfig: {
+          temperature: 0.8,
+          maxOutputTokens: 4096,
+          responseMimeType: "application/json",
+        },
+      }),
     });
 
-    const textBlock = message.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
+    if (!geminiRes.ok) {
+      const errBody = await geminiRes.text().catch(() => "");
+      console.error("gemini error", geminiRes.status, errBody);
+      return NextResponse.json(
+        { error: "تعذر الاتصال بخدمة الذكاء الاصطناعي" },
+        { status: 502 }
+      );
+    }
+
+    const data = await geminiRes.json();
+    const text: string | undefined =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
       return NextResponse.json(
         { error: "رد غير متوقع من الذكاء الاصطناعي" },
         { status: 502 }
       );
     }
 
-    const jsonStr = extractJson(textBlock.text);
+    const jsonStr = extractJson(text);
     let plan: GeneratedPlan;
     try {
       plan = JSON.parse(jsonStr);
