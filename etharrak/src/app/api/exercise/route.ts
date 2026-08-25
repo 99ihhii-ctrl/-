@@ -20,6 +20,9 @@ export async function GET(req: NextRequest) {
 
   const rapidApiKey = process.env.RAPIDAPI_KEY;
   if (!rapidApiKey) {
+    console.error(
+      "exercise lookup skipped: RAPIDAPI_KEY is not set in this environment"
+    );
     return NextResponse.json({ gifUrl: null });
   }
 
@@ -38,6 +41,11 @@ export async function GET(req: NextRequest) {
     );
 
     if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(
+        `exercise lookup failed for "${key}": ${res.status} ${res.statusText}`,
+        body.slice(0, 300)
+      );
       cache.set(key, null);
       return NextResponse.json({ gifUrl: null });
     }
@@ -46,6 +54,10 @@ export async function GET(req: NextRequest) {
     const gifUrl: string | null = Array.isArray(data) && data[0]?.gifUrl
       ? data[0].gifUrl
       : null;
+
+    if (!gifUrl) {
+      console.error(`exercise lookup: no match found for "${key}"`);
+    }
 
     cache.set(key, gifUrl);
     return NextResponse.json({ gifUrl });
